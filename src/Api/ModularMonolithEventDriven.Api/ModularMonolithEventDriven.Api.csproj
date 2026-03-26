@@ -2,6 +2,7 @@
   <PropertyGroup>
     <AssemblyName>ModularMonolithEventDriven.Api</AssemblyName>
     <RootNamespace>ModularMonolithEventDriven.Api</RootNamespace>
+    <UserSecretsId>28e5287d-0bb1-44ba-a732-8aca07bb0ece</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Common\ModularMonolithEventDriven.Common.Infrastructure\ModularMonolithEventDriven.Common.Infrastructure.csproj" />
