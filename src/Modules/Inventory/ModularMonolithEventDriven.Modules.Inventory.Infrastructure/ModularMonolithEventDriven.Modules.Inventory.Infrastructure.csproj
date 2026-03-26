@@ -2,6 +2,7 @@
   <PropertyGroup>
     <AssemblyName>ModularMonolithEventDriven.Modules.Inventory.Infrastructure</AssemblyName>
     <RootNamespace>ModularMonolithEventDriven.Modules.Inventory.Infrastructure</RootNamespace>
+    <UserSecretsId>d5db831b-c254-43be-a0d3-c676e7ab8415</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Inventory.Application\ModularMonolithEventDriven.Modules.Inventory.Application.csproj" />
@@ -9,6 +10,9 @@
     <ProjectReference Include="..\..\..\Modules\Orders\ModularMonolithEventDriven.Modules.Orders.IntegrationEvents\ModularMonolithEventDriven.Modules.Orders.IntegrationEvents.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>

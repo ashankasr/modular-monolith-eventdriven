@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Persistence;
 
@@ -7,9 +9,18 @@ public sealed class InventoryDbContextFactory : IDesignTimeDbContextFactory<Inve
 {
     public InventoryDbContext CreateDbContext(string[] args)
     {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        var connectionString = configuration.GetConnectionString("ModularMonolithEventDrivenDb")
+            ?? throw new InvalidOperationException("Connection string 'ModularMonolithEventDrivenDb' not found.");
+
         var optionsBuilder = new DbContextOptionsBuilder<InventoryDbContext>();
-        optionsBuilder.UseSqlServer(
-            "Server=localhost;Integrated Security=false;User ID=sa;Password=Donkey@1;TrustServerCertificate=true;Initial Catalog=ModularMonolithEventDrivenDb",
+        optionsBuilder.UseSqlServer(connectionString,
             b => b.MigrationsHistoryTable("__EFMigrationsHistory", "inventory"));
 
         return new InventoryDbContext(optionsBuilder.Options);

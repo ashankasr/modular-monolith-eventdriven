@@ -85,7 +85,7 @@ http://localhost:15672  (guest / guest)
 
 **Connection string** (`appsettings.json`):
 ```
-Server=localhost;Integrated Security=false;User ID=sa;Password=Donkey@1;TrustServerCertificate=true;Initial Catalog=OchestratorDb
+Server=localhost;Integrated Security=false;User ID=sa;Password=password;TrustServerCertificate=true;Initial Catalog=OchestratorDb
 ```
 
 ---
