@@ -22,11 +22,11 @@ A **Modular Monolith** is a single deployable unit divided into strongly-bounded
 ## Module Structure (5 projects per module)
 
 ```
-Ochestrator.Modules.<Name>.Domain          → Entities, Repository interfaces, Domain errors
-Ochestrator.Modules.<Name>.Application     → Commands, Queries, MediatR Handlers, IUnitOfWork
-Ochestrator.Modules.<Name>.Infrastructure  → DbContext, Repos, MassTransit Consumers, DI ext
-Ochestrator.Modules.<Name>.IntegrationEvents → Event/Command contracts for RabbitMQ
-Ochestrator.Modules.<Name>.Presentation    → Minimal API endpoints
+ModularMonolithEventDriven.Modules.<Name>.Domain          → Entities, Repository interfaces, Domain errors
+ModularMonolithEventDriven.Modules.<Name>.Application     → Commands, Queries, MediatR Handlers, IUnitOfWork
+ModularMonolithEventDriven.Modules.<Name>.Infrastructure  → DbContext, Repos, MassTransit Consumers, DI ext
+ModularMonolithEventDriven.Modules.<Name>.IntegrationEvents → Event/Command contracts for RabbitMQ
+ModularMonolithEventDriven.Modules.<Name>.Presentation    → Minimal API endpoints
 ```
 
 **Modules:** Orders · Inventory · Payments · Notifications
@@ -49,7 +49,7 @@ Ochestrator.Modules.<Name>.Presentation    → Minimal API endpoints
 
 ## Deep Dive
 
-Load `references/architecture-deep-dive.md` for:
+Load `references/architecture-deep-dive.md` and `docs/architecture.md` for:
 - Full layer dependency rules
 - DI registration pattern (per-module extension methods)
 - MassTransit consumer pattern
@@ -60,6 +60,6 @@ Load `references/architecture-deep-dive.md` for:
 
 ## Key Files
 
-- [Program.cs](src/Api/Ochestrator.Api/Program.cs) — module wiring, MassTransit config, migrations
-- [OrderSaga.cs](src/Modules/Orders/Ochestrator.Modules.Orders.Application/Saga/OrderSaga.cs) — Saga state machine
+- [Program.cs](src/Api/ModularMonolithEventDriven.Api/Program.cs) — module wiring, MassTransit config, migrations
+- [OrderSaga.cs](src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Application/Saga/OrderSaga.cs) — Saga state machine
 - [Directory.Packages.props](Directory.Packages.props) — centralized NuGet versions
