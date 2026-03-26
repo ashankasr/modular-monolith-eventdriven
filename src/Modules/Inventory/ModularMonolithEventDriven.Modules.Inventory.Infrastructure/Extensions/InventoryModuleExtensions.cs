@@ -15,8 +15,6 @@ public static class InventoryModuleExtensions
         IConfiguration configuration)
     {
         
-        Console.WriteLine("Connection String" + configuration.GetConnectionString("ModularMonolithEventDrivenDb"));
-
         services.AddDbContext<InventoryDbContext>(opts =>
             opts.UseSqlServer(configuration.GetConnectionString("ModularMonolithEventDrivenDb")));
 
