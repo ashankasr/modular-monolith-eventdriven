@@ -1,11 +1,8 @@
 ﻿using MassTransit;
-using Microsoft.EntityFrameworkCore;
 using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Extensions;
-using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Persistence;
 using ModularMonolithEventDriven.Modules.Notifications.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Notifications.Infrastructure.Extensions;
-using ModularMonolithEventDriven.Modules.Notifications.Infrastructure.Persistence;
 using ModularMonolithEventDriven.Modules.Orders.Application.Saga;
 using ModularMonolithEventDriven.Modules.Orders.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Orders.Infrastructure.Extensions;
@@ -14,7 +11,6 @@ using ModularMonolithEventDriven.Modules.Orders.Presentation;
 using ModularMonolithEventDriven.Modules.Inventory.Presentation;
 using ModularMonolithEventDriven.Modules.Payments.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Payments.Infrastructure.Extensions;
-using ModularMonolithEventDriven.Modules.Payments.Infrastructure.Persistence;
 using ModularMonolithEventDriven.Modules.Payments.Presentation;
 using ModularMonolithEventDriven.Modules.Notifications.Presentation;
 using Scalar.AspNetCore;
@@ -86,9 +82,6 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Apply migrations automatically on startup
-await ApplyMigrationsAsync(app);
-
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -108,24 +101,3 @@ app.MapPaymentsEndpoints();
 app.MapNotificationsEndpoints();
 
 app.Run();
-
-static async Task ApplyMigrationsAsync(WebApplication app)
-{
-    using var scope = app.Services.CreateScope();
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-    try
-    {
-        logger.LogInformation("Applying database migrations...");
-        await scope.ServiceProvider.GetRequiredService<OrdersDbContext>().Database.MigrateAsync();
-        await scope.ServiceProvider.GetRequiredService<InventoryDbContext>().Database.MigrateAsync();
-        await scope.ServiceProvider.GetRequiredService<PaymentsDbContext>().Database.MigrateAsync();
-        await scope.ServiceProvider.GetRequiredService<NotificationsDbContext>().Database.MigrateAsync();
-        logger.LogInformation("Database migrations applied successfully.");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "An error occurred while applying migrations.");
-        throw;
-    }
-}
