@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Orders.Presentation</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Orders.Presentation</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Orders.Application\ModularMonolithEventDriven.Modules.Orders.Application.csproj" />
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Orders.Infrastructure\ModularMonolithEventDriven.Modules.Orders.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

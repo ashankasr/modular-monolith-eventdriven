@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Notifications.Domain</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Notifications.Domain</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\ModularMonolithEventDriven.Common.Domain\ModularMonolithEventDriven.Common.Domain.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Inventory.IntegrationEvents</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Inventory.IntegrationEvents</RootNamespace>
+  </PropertyGroup>
+</Project>

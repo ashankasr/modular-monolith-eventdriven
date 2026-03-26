@@ -1,0 +1,64 @@
+## .NET / C#
+
+# Build output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coveragexml
+coverage/
+coverage.json
+coverlet.runsettings
+
+# Publish output
+publish/
+[Pp]ublish/
+
+# Runtime
+*.runtimeconfig.json
+
+# Entity Framework
+Migrations/*.designer.cs
+
+# Secrets / environment
+*.env
+*.env.local
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# OS
+.DS_Store
+Thumbs.db

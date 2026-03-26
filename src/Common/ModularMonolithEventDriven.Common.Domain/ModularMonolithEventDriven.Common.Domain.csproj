@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Common.Domain</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Common.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

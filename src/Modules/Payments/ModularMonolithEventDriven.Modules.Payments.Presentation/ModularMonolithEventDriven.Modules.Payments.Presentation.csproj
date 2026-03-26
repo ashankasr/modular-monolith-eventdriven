@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Payments.Presentation</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Payments.Presentation</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Payments.Application\ModularMonolithEventDriven.Modules.Payments.Application.csproj" />
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Payments.Infrastructure\ModularMonolithEventDriven.Modules.Payments.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

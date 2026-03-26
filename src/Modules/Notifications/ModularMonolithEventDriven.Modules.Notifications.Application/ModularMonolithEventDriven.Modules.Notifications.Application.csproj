@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Notifications.Application</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Notifications.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Notifications.Domain\ModularMonolithEventDriven.Modules.Notifications.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Common\ModularMonolithEventDriven.Common.Application\ModularMonolithEventDriven.Common.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MassTransit" />
+    <PackageReference Include="Mapster" />
+  </ItemGroup>
+</Project>

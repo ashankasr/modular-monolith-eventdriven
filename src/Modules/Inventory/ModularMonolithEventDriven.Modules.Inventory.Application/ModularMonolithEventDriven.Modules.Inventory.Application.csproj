@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Inventory.Application</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Inventory.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Inventory.Domain\ModularMonolithEventDriven.Modules.Inventory.Domain.csproj" />
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Inventory.IntegrationEvents\ModularMonolithEventDriven.Modules.Inventory.IntegrationEvents.csproj" />
+    <ProjectReference Include="..\..\..\Common\ModularMonolithEventDriven.Common.Application\ModularMonolithEventDriven.Common.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MassTransit" />
+    <PackageReference Include="Mapster" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Payments.IntegrationEvents</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Payments.IntegrationEvents</RootNamespace>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Orders.IntegrationEvents</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Orders.IntegrationEvents</RootNamespace>
+  </PropertyGroup>
+</Project>

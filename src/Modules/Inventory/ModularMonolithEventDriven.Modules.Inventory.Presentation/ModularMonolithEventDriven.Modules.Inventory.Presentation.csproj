@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Inventory.Presentation</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Inventory.Presentation</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Inventory.Application\ModularMonolithEventDriven.Modules.Inventory.Application.csproj" />
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Inventory.Infrastructure\ModularMonolithEventDriven.Modules.Inventory.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

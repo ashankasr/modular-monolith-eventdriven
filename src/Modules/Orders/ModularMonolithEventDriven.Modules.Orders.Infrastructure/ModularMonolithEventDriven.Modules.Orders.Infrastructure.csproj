@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Orders.Infrastructure</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Orders.Infrastructure</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Orders.Application\ModularMonolithEventDriven.Modules.Orders.Application.csproj" />
+    <ProjectReference Include="..\..\..\Common\ModularMonolithEventDriven.Common.Infrastructure\ModularMonolithEventDriven.Common.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Modules\Inventory\ModularMonolithEventDriven.Modules.Inventory.IntegrationEvents\ModularMonolithEventDriven.Modules.Inventory.IntegrationEvents.csproj" />
+    <ProjectReference Include="..\..\..\Modules\Payments\ModularMonolithEventDriven.Modules.Payments.IntegrationEvents\ModularMonolithEventDriven.Modules.Payments.IntegrationEvents.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="MassTransit.EntityFrameworkCore" />
+  </ItemGroup>
+</Project>

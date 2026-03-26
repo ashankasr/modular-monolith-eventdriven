@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>ModularMonolithEventDriven.Modules.Notifications.Presentation</AssemblyName>
+    <RootNamespace>ModularMonolithEventDriven.Modules.Notifications.Presentation</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Notifications.Application\ModularMonolithEventDriven.Modules.Notifications.Application.csproj" />
+    <ProjectReference Include="..\ModularMonolithEventDriven.Modules.Notifications.Infrastructure\ModularMonolithEventDriven.Modules.Notifications.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
