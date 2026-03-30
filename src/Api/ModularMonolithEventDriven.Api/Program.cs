@@ -1,10 +1,9 @@
-﻿using MassTransit;
+using MassTransit;
 using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Extensions;
 using ModularMonolithEventDriven.Modules.Notifications.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Notifications.Infrastructure.Extensions;
 using ModularMonolithEventDriven.Modules.Orders.Application.Saga;
-using ModularMonolithEventDriven.Modules.Orders.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Orders.Infrastructure.Extensions;
 using ModularMonolithEventDriven.Modules.Orders.Infrastructure.Persistence;
 using ModularMonolithEventDriven.Modules.Orders.Presentation;
@@ -33,23 +32,17 @@ builder.Services.AddNotificationsModule(builder.Configuration);
 builder.Services.AddMassTransit(x =>
 {
     // --- Choreography Consumers ---
-    // Inventory: reacts to OrderPlacedEvent
-    x.AddConsumer<OrderPlacedInventoryConsumer>();
+    // Each module reacts independently to OrderCancelledEvent (no central coordinator)
+    x.AddConsumer<OrderCancelledInventoryConsumer>();   // Inventory: releases reserved stock
+    x.AddConsumer<OrderCancelledPaymentConsumer>();     // Payments: refunds payment if exists
+    x.AddConsumer<OrderCancelledNotificationConsumer>(); // Notifications: sends cancellation confirmation
+
+    // --- Orchestration Consumers ---
+    // Saga issues commands; each consumer handles one step
     x.AddConsumer<ReserveStockCommandConsumer>();
     x.AddConsumer<ReleaseStockCommandConsumer>();
-
-    // Payments: reacts to StockReservedEvent (choreography) + ProcessPaymentCommand (orchestration)
-    x.AddConsumer<StockReservedPaymentConsumer>();
     x.AddConsumer<ProcessPaymentCommandConsumer>();
-
-    // Notifications: reacts to PaymentProcessedEvent (choreography) + SendOrderNotificationCommand (orchestration)
-    x.AddConsumer<PaymentProcessedNotificationConsumer>();
     x.AddConsumer<SendOrderNotificationConsumer>();
-
-    // Orders: update order status from choreography events
-    x.AddConsumer<StockReservedOrderUpdater>();
-    x.AddConsumer<PaymentProcessedOrderUpdater>();
-    x.AddConsumer<PaymentFailedOrderUpdater>();
 
     // --- Orchestration: Saga State Machine ---
     x.AddSagaStateMachine<OrderSaga, OrderSagaState>()

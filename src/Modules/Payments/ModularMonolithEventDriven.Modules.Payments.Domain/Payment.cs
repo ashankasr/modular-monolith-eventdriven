@@ -21,6 +21,8 @@ public sealed class Payment : AuditableGuidEntity
 
     public static Payment Create(Guid id, Guid orderId, string customerId, decimal amount) =>
         new(id, orderId, customerId, amount);
+
+    public void Refund() => Status = PaymentStatus.Refunded;
 }
 
 public enum PaymentStatus { Processed, Failed, Refunded }

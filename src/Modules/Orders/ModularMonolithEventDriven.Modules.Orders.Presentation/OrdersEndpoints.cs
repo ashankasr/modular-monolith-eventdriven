@@ -1,9 +1,9 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using ModularMonolithEventDriven.Modules.Orders.Application.Orders.CancelOrder;
 using ModularMonolithEventDriven.Modules.Orders.Application.Orders.GetOrder;
-using ModularMonolithEventDriven.Modules.Orders.Application.Orders.PlaceOrder;
 using ModularMonolithEventDriven.Modules.Orders.Application.Orders.StartOrderSaga;
 
 namespace ModularMonolithEventDriven.Modules.Orders.Presentation;
@@ -14,26 +14,8 @@ public static class OrdersEndpoints
     {
         var group = app.MapGroup("/api/orders").WithTags("Orders");
 
-        // CHOREOGRAPHY: Place order via event-driven choreography
-        group.MapPost("/choreography", async (PlaceOrderRequest request, ISender sender) =>
-        {
-            var command = new PlaceOrderCommand(
-                request.CustomerId,
-                request.CustomerEmail,
-                request.Items.Select(i => new PlaceOrderItemDto(i.ProductId, i.ProductName, i.Quantity, i.UnitPrice)).ToList(),
-                request.SimulatePaymentFailure,
-                request.SimulateStockFailure);
-
-            var result = await sender.Send(command);
-            return result.IsSuccess
-                ? Results.Ok(new { result.Value.OrderId, Pattern = "Choreography", Message = "Order placed. Watch the logs to see each module react to events." })
-                : Results.BadRequest(result.Error);
-        })
-        .WithSummary("Place order (Choreography pattern)")
-        .WithDescription("Places an order using the Choreography pattern. Modules communicate via events without a central coordinator.");
-
         // ORCHESTRATION: Place order via Saga state machine
-        group.MapPost("/orchestration", async (PlaceOrderRequest request, ISender sender) =>
+        group.MapPost("/", async (StartSagaRequest request, ISender sender) =>
         {
             var command = new StartOrderSagaCommand(
                 request.CustomerId,
@@ -44,11 +26,23 @@ public static class OrdersEndpoints
 
             var result = await sender.Send(command);
             return result.IsSuccess
-                ? Results.Ok(new { result.Value.OrderId, result.Value.CorrelationId, Pattern = "Orchestration", Message = "Saga started. The saga orchestrates each step." })
+                ? Results.Ok(new { result.Value.OrderId, result.Value.CorrelationId, Pattern = "Orchestration", Message = "Saga started. The saga coordinates: ReserveStock → ProcessPayment → Notify, with compensation on failure." })
                 : Results.BadRequest(result.Error);
         })
         .WithSummary("Place order (Orchestration/Saga pattern)")
-        .WithDescription("Places an order using the Orchestration pattern. A MassTransit Saga state machine coordinates each step.");
+        .WithDescription("Places an order using the Orchestration pattern. A MassTransit Saga state machine coordinates each step and handles compensation on failure.");
+
+        // CHOREOGRAPHY: Cancel order — each module reacts to OrderCancelledEvent independently
+        group.MapPost("/{orderId:guid}/cancel", async (Guid orderId, CancelOrderRequest request, ISender sender) =>
+        {
+            var command = new CancelOrderCommand(orderId, request.Reason);
+            var result = await sender.Send(command);
+            return result.IsSuccess
+                ? Results.Ok(new { result.Value.OrderId, Pattern = "Choreography", Message = "OrderCancelledEvent published. Watch the logs: Inventory releases stock, Payments refunds, Notifications confirms — each module reacts independently." })
+                : Results.BadRequest(result.Error);
+        })
+        .WithSummary("Cancel order (Choreography pattern)")
+        .WithDescription("Publishes an OrderCancelledEvent. Each module reacts autonomously with no central coordinator: Inventory releases reserved stock, Payments issues a refund, Notifications sends a cancellation confirmation.");
 
         // GET order status
         group.MapGet("/{orderId:guid}", async (Guid orderId, ISender sender) =>
@@ -62,15 +56,17 @@ public static class OrdersEndpoints
     }
 }
 
-public sealed record PlaceOrderRequest(
+public sealed record StartSagaRequest(
     string CustomerId,
     string CustomerEmail,
-    List<PlaceOrderItemRequest> Items,
+    List<StartSagaItemRequest> Items,
     bool SimulatePaymentFailure = false,
     bool SimulateStockFailure = false);
 
-public sealed record PlaceOrderItemRequest(
+public sealed record StartSagaItemRequest(
     Guid ProductId,
     string ProductName,
     int Quantity,
     decimal UnitPrice);
+
+public sealed record CancelOrderRequest(string Reason = "Cancelled by customer");
