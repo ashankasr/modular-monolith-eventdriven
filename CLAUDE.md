@@ -6,8 +6,8 @@ A **.NET 9 Modular Monolith** demonstrating two distributed transaction patterns
 
 | Pattern | Trigger | How it works |
 |---|---|---|
-| **Choreography** | `POST /api/orders/choreography` | Modules react to events autonomously (no central coordinator) |
-| **Orchestration** | `POST /api/orders/orchestration` | `OrderSaga` state machine coordinates every step with compensation |
+| **Orchestration** | `POST /api/orders` | `OrderSaga` state machine coordinates every step with compensation |
+| **Choreography** | `POST /api/orders/{orderId}/cancel` | Modules react to `OrderCancelledEvent` autonomously (no central coordinator) |
 
 ---
 
@@ -114,8 +114,8 @@ GET  /api/inventory/products       → List products
 
 ### Orders
 ```
-POST /api/orders/choreography      → Place order via event choreography
-POST /api/orders/orchestration     → Place order via saga orchestration
+POST /api/orders                   → Place order (Orchestration/Saga pattern)
+POST /api/orders/{orderId}/cancel  → Cancel order (Choreography pattern — publishes OrderCancelledEvent)
 GET  /api/orders/{orderId}         → Get order status
 ```
 
@@ -151,8 +151,8 @@ dotnet ef database update \
 | File | Purpose |
 |---|---|
 | [Program.cs](src/Api/Ochestrator.Api/Program.cs) | Module wiring, MassTransit, auto-migrations |
-| [OrderSaga.cs](src/Modules/Orders/Ochestrator.Modules.Orders.Application/Saga/OrderSaga.cs) | Orchestration state machine |
-| [OrdersEndpoints.cs](src/Modules/Orders/Ochestrator.Modules.Orders.Presentation/OrdersEndpoints.cs) | HTTP endpoints |
+| [OrderSaga.cs](src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Application/Saga/OrderSaga.cs) | Orchestration state machine |
+| [OrdersEndpoints.cs](src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Presentation/OrdersEndpoints.cs) | HTTP endpoints |
 | [docker-compose.yml](docker-compose.yml) | RabbitMQ container |
 | [Directory.Packages.props](Directory.Packages.props) | Centralized NuGet versions |
 | [appsettings.json](src/Api/Ochestrator.Api/appsettings.json) | Connection strings, RabbitMQ, logging |
@@ -162,8 +162,8 @@ dotnet ef database update \
 ## Saga Flow (Orchestration)
 
 ```
-POST /api/orders/orchestration
-  → StartOrderSagaCommand
+POST /api/orders
+  → PlaceOrderCommand → Order persisted, publishes OrderSagaStartMessage
     → [Saga] ReserveStockCommand → Inventory
       ↳ StockWasReserved → [Saga] ProcessPaymentCommand → Payments
           ↳ PaymentWasProcessed → [Saga] SendOrderNotificationCommand → Notifications → ✅ Done
@@ -174,9 +174,9 @@ POST /api/orders/orchestration
 ## Choreography Flow
 
 ```
-POST /api/orders/choreography
-  → PlaceOrderCommand → Order created, publishes OrderPlacedEvent
-    → Inventory consumer: reserves stock, publishes StockReservedEvent
-      → Payments consumer: processes payment, publishes PaymentProcessedEvent
-        → Notifications consumer: sends notification
+POST /api/orders/{orderId}/cancel
+  → CancelOrderCommand → publishes OrderCancelledEvent
+    → Inventory consumer: releases reserved stock (reacts independently)
+    → Payments consumer: issues refund (reacts independently)
+    → Notifications consumer: sends cancellation confirmation (reacts independently)
 ```
