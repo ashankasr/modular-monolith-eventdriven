@@ -1,6 +1,6 @@
 ﻿namespace ModularMonolithEventDriven.Common.Domain.Primitives;
 
-public abstract class Entity<TKey> : IEquatable<Entity<TKey>>
+public abstract class Entity<TKey> : IEquatable<Entity<TKey>>, IHasDomainEvents
     where TKey : notnull
 {
     private readonly List<IDomainEvent> _domainEvents = [];

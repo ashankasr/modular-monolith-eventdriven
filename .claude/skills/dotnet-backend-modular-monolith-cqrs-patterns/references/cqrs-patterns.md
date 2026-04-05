@@ -449,6 +449,120 @@ Application/
 
 ---
 
+## 15. Transactional Outbox Pattern (per-module)
+
+### How it works
+
+```
+entity.RaiseDomainEvent(new XyzDomainEvent(...))   [in-memory, in Entity<TKey>]
+      ↓
+unitOfWork.SaveChangesAsync()
+      └─ OutboxMessagesInterceptor (SaveChangesInterceptor)
+           serialises domain events → OutboxMessage rows (same DB transaction, same schema)
+      ↓
+ProcessOutboxMessagesJob (Quartz, every 30s)
+      └─ OutboxMessageProcessor<TDbContext> reads unprocessed rows
+      └─ JsonDeserialise → IDomainEvent
+      └─ publisher.Publish(DomainEventNotification<T>)   [MediatR]
+      ↓
+IDomainEventHandler<T>.Handle(DomainEventNotification<T>)
+      └─ converts to integration event
+      └─ IEventBus.PublishAsync(IntegrationEvent)        [MassTransit → RabbitMQ]
+      ↓
+Consumers in other modules react
+```
+
+### Key types (all in Common — no module work needed)
+
+| Type | Location | Role |
+|---|---|---|
+| `OutboxMessage` | `Common.Infrastructure/Outbox/` | EF entity persisted to `<schema>.OutboxMessages` |
+| `OutboxMessagesInterceptor` | `Common.Infrastructure/Outbox/` | Registered as singleton; writes rows atomically |
+| `OutboxMessageProcessor<TDbContext>` | `Common.Infrastructure/Outbox/` | Generic; one registration per module |
+| `ProcessOutboxMessagesJob` | `Common.Infrastructure/Jobs/` | Quartz job, `[DisallowConcurrentExecution]` |
+| `DomainEventNotification<T>` | `Common.Application/Abstractions/` | MediatR `INotification` wrapper (avoids MediatR dep in Domain) |
+| `IDomainEventHandler<T>` | `Common.Application/Abstractions/` | `INotificationHandler<DomainEventNotification<T>>` |
+| `IEventBus` | `Common.Application/Abstractions/` | Abstraction over MassTransit for Application layer |
+| `MassTransitEventBus` | `Common.Infrastructure/EventBus/` | `IEventBus` → `IPublishEndpoint.Publish` |
+
+### Per-module wiring (Infrastructure/Extensions/<Module>Module.cs)
+
+Two changes per module — **this is all that is needed per module**:
+
+```csharp
+// 1. Inject interceptor into AddDbContext
+services.AddDbContext<InventoryDbContext>((sp, opts) =>
+{
+    opts.UseSqlServer(configuration.GetConnectionString("ModularMonolithEventDrivenDb"));
+    opts.AddInterceptors(sp.GetRequiredService<OutboxMessagesInterceptor>());   // ← add this
+});
+
+// 2. Register the generic processor for this module's DbContext
+services.AddScoped<IOutboxMessageProcessor, OutboxMessageProcessor<InventoryDbContext>>();  // ← add this
+```
+
+The `OutboxMessagesInterceptor` singleton and Quartz job are already registered globally in `InfrastructureExtensions.AddInfrastructure()`.
+
+### Per-module migration
+
+After wiring, add a migration to create `<schema>.OutboxMessages`:
+
+```bash
+dotnet ef migrations add AddOutboxMessages \
+  --project src/Modules/<Module>/Ochestrator.Modules.<Module>.Infrastructure \
+  --startup-project src/Modules/<Module>/Ochestrator.Modules.<Module>.Infrastructure \
+  --context <Module>DbContext
+```
+
+The `OutboxMessages` table config is inherited from `BaseDbContext.OnModelCreating`, so nothing extra is needed in the module's `DbContext`.
+
+### Domain event handler pattern
+
+```csharp
+// Application/<Feature>/<Action>/XyzDomainEventHandler.cs
+public sealed class OrderCreatedDomainEventHandler(
+    IOrderRepository orderRepository,
+    IEventBus eventBus) : IDomainEventHandler<OrderCreatedDomainEvent>
+{
+    public async Task Handle(
+        DomainEventNotification<OrderCreatedDomainEvent> notification,
+        CancellationToken cancellationToken)
+    {
+        var domainEvent = notification.DomainEvent;
+
+        // Load the aggregate if the event doesn't carry all needed data
+        var order = await orderRepository.GetByIdAsync(domainEvent.OrderId, cancellationToken);
+        if (order is null) return;
+
+        // Convert to integration event and publish to RabbitMQ
+        await eventBus.PublishAsync(new OrderCreatedIntegrationEvent(
+            order.Id,
+            order.CustomerId,
+            order.CustomerEmail,
+            order.TotalAmount,
+            domainEvent.OccurredOn), cancellationToken);
+    }
+}
+```
+
+**Rules:**
+- One handler per domain event per concern (multiple handlers for the same event are fine — MediatR fans out)
+- Do NOT inject `IPublishEndpoint` directly in handlers — use `IEventBus`
+- Do NOT inject `I<Module>UnitOfWork` — the processor already committed; just read and publish
+- The handler is auto-discovered by `AddApplication(assembly)` — no manual registration needed
+
+### Domain event definition (no change to existing pattern)
+
+```csharp
+// Domain/Events/OrderCreatedDomainEvent.cs
+public sealed record OrderCreatedDomainEvent(Guid OrderId, string CustomerId) : DomainEvent;
+
+// Inside the entity constructor/factory:
+RaiseDomainEvent(new OrderCreatedDomainEvent(id, customerId));
+```
+
+---
+
 ## 14. Defining DDD Types from Requirements
 
 When given a requirement, apply this checklist:

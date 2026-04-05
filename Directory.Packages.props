@@ -27,6 +27,9 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.3" />
+    <!-- Quartz (Outbox job scheduler) -->
+    <PackageVersion Include="Quartz" Version="3.13.1" />
+    <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.13.1" />
     <!-- ASP.NET Core -->
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.1.7" />

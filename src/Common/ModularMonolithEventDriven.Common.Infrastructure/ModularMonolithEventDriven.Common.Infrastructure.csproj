@@ -8,6 +8,8 @@
     <ProjectReference Include="..\..\Common\ModularMonolithEventDriven.Common.Domain\ModularMonolithEventDriven.Common.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Quartz" />
+    <PackageReference Include="Quartz.Extensions.Hosting" />
     <PackageReference Include="MassTransit" />
     <PackageReference Include="MassTransit.RabbitMQ" />
     <PackageReference Include="MassTransit.EntityFrameworkCore" />

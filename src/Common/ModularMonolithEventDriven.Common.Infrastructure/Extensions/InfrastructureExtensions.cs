@@ -1,7 +1,12 @@
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ModularMonolithEventDriven.Common.Application.Abstractions;
+using ModularMonolithEventDriven.Common.Infrastructure.EventBus;
+using ModularMonolithEventDriven.Common.Infrastructure.Jobs;
 using ModularMonolithEventDriven.Common.Infrastructure.Options;
+using ModularMonolithEventDriven.Common.Infrastructure.Outbox;
+using Quartz;
 
 namespace ModularMonolithEventDriven.Common.Infrastructure.Extensions;
 
@@ -13,6 +18,10 @@ public static class InfrastructureExtensions
         IConfiguration configuration)
     {
         AddMessageBroker(services, moduleConsumerConfigurators, configuration);
+        AddOutboxJob(services);
+
+        services.AddSingleton<OutboxMessagesInterceptor>();
+        services.AddScoped<IEventBus, MassTransitEventBus>();
 
         return services;
     }
@@ -55,5 +64,22 @@ public static class InfrastructureExtensions
 
             configurator.ConfigureEndpoints(context);
         });
+    }
+
+    private static void AddOutboxJob(IServiceCollection services)
+    {
+        services.AddQuartz(q =>
+        {
+            q.AddJob<ProcessOutboxMessagesJob>(ProcessOutboxMessagesJob.Key, j => j.StoreDurably());
+
+            q.AddTrigger(t => t
+                .ForJob(ProcessOutboxMessagesJob.Key)
+                .WithIdentity("outbox-trigger")
+                .WithSimpleSchedule(s => s
+                    .WithIntervalInSeconds(30)
+                    .RepeatForever()));
+        });
+
+        services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
     }
 }
