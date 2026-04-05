@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ModularMonolithEventDriven.Common.Application.Extensions;
 using ModularMonolithEventDriven.Modules.Inventory.Application.Abstractions;
+using ModularMonolithEventDriven.Modules.Inventory.Application.Products;
 using ModularMonolithEventDriven.Modules.Inventory.Domain;
 using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Persistence;
@@ -25,6 +26,8 @@ public static class InventoryModule
 
         services.AddApplication(
             typeof(Application.AssemblyReference).Assembly);
+
+        ProductMappingConfig.Configure();
 
         return services;
     }

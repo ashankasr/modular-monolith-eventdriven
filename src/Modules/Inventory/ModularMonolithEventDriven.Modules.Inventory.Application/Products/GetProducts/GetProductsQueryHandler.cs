@@ -1,4 +1,5 @@
-﻿using ModularMonolithEventDriven.Common.Application.Abstractions;
+﻿using Mapster;
+using ModularMonolithEventDriven.Common.Application.Abstractions;
 using ModularMonolithEventDriven.Common.Domain.Results;
 using ModularMonolithEventDriven.Modules.Inventory.Domain;
 
@@ -10,6 +11,6 @@ public sealed class GetProductsQueryHandler(IProductRepository productRepository
     public async Task<Result<List<ProductDto>>> Handle(GetProductsQuery query, CancellationToken cancellationToken)
     {
         var products = await productRepository.GetAllAsync(cancellationToken);
-        return products.Select(p => new ProductDto(p.Id, p.Name, p.Sku, p.StockQuantity, p.Price)).ToList();
+        return products.Adapt<List<ProductDto>>();
     }
 }
