@@ -1,4 +1,4 @@
-﻿using MassTransit;
+using MassTransit;
 using ModularMonolithEventDriven.Common.Application.Abstractions;
 using ModularMonolithEventDriven.Common.Domain.Results;
 using ModularMonolithEventDriven.Modules.Orders.Application.Abstractions;
@@ -6,15 +6,15 @@ using ModularMonolithEventDriven.Modules.Orders.Application.Saga;
 using ModularMonolithEventDriven.Modules.Orders.Domain;
 using ModularMonolithEventDriven.Modules.Orders.IntegrationEvents;
 
-namespace ModularMonolithEventDriven.Modules.Orders.Application.Orders.StartOrderSaga;
+namespace ModularMonolithEventDriven.Modules.Orders.Application.Orders.PlaceOrder;
 
-public sealed class StartOrderSagaCommandHandler(
+public sealed class PlaceOrderCommandHandler(
     IOrderRepository orderRepository,
     IOrdersUnitOfWork unitOfWork,
-    IPublishEndpoint publishEndpoint) : ICommandHandler<StartOrderSagaCommand, StartOrderSagaResponse>
+    IPublishEndpoint publishEndpoint) : ICommandHandler<PlaceOrderCommand, PlaceOrderResponse>
 {
-    public async Task<Result<StartOrderSagaResponse>> Handle(
-        StartOrderSagaCommand command,
+    public async Task<Result<PlaceOrderResponse>> Handle(
+        PlaceOrderCommand command,
         CancellationToken cancellationToken)
     {
         var orderId = Guid.NewGuid();
@@ -29,7 +29,7 @@ public sealed class StartOrderSagaCommandHandler(
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Send message to start the saga
-        await publishEndpoint.Publish(new StartOrderSagaMessage(
+        await publishEndpoint.Publish(new OrderSagaStartMessage(
             correlationId,
             orderId,
             command.CustomerId,
@@ -39,6 +39,6 @@ public sealed class StartOrderSagaCommandHandler(
             command.SimulatePaymentFailure,
             command.SimulateStockFailure), cancellationToken);
 
-        return new StartOrderSagaResponse(orderId, correlationId);
+        return new PlaceOrderResponse(orderId, correlationId);
     }
 }

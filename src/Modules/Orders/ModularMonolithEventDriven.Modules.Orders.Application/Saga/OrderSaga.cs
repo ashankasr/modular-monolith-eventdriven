@@ -16,7 +16,7 @@ public sealed class OrderSaga : MassTransitStateMachine<OrderSagaState>
     public State Completed { get; private set; } = null!;
     public State Failed { get; private set; } = null!;
 
-    public Event<StartOrderSagaMessage> OrderSagaStarted { get; private set; } = null!;
+    public Event<OrderSagaStartMessage> OrderSagaStarted { get; private set; } = null!;
     public Event<StockReservedEvent> StockWasReserved { get; private set; } = null!;
     public Event<StockReservationFailedEvent> StockReservationFailed { get; private set; } = null!;
     public Event<PaymentProcessedEvent> PaymentWasProcessed { get; private set; } = null!;

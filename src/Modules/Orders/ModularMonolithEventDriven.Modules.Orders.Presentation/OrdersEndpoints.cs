@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using ModularMonolithEventDriven.Modules.Orders.Application.Orders.CancelOrder;
 using ModularMonolithEventDriven.Modules.Orders.Application.Orders.GetOrder;
-using ModularMonolithEventDriven.Modules.Orders.Application.Orders.StartOrderSaga;
+using ModularMonolithEventDriven.Modules.Orders.Application.Orders.PlaceOrder;
 
 namespace ModularMonolithEventDriven.Modules.Orders.Presentation;
 
@@ -15,12 +15,12 @@ public static class OrdersEndpoints
         var group = app.MapGroup("/api/orders").WithTags(Tags.Orders);
 
         // ORCHESTRATION: Place order via Saga state machine
-        group.MapPost("/", async (StartSagaRequest request, ISender sender) =>
+        group.MapPost("/", async (PlaceOrderRequest request, ISender sender) =>
         {
-            var command = new StartOrderSagaCommand(
+            var command = new PlaceOrderCommand(
                 request.CustomerId,
                 request.CustomerEmail,
-                request.Items.Select(i => new StartOrderSagaItemDto(i.ProductId, i.ProductName, i.Quantity, i.UnitPrice)).ToList(),
+                request.Items.Select(i => new PlaceOrderItemDto(i.ProductId, i.ProductName, i.Quantity, i.UnitPrice)).ToList(),
                 request.SimulatePaymentFailure,
                 request.SimulateStockFailure);
 
@@ -56,14 +56,14 @@ public static class OrdersEndpoints
     }
 }
 
-public sealed record StartSagaRequest(
+public sealed record PlaceOrderRequest(
     string CustomerId,
     string CustomerEmail,
-    List<StartSagaItemRequest> Items,
+    List<PlaceOrderItemRequest> Items,
     bool SimulatePaymentFailure = false,
     bool SimulateStockFailure = false);
 
-public sealed record StartSagaItemRequest(
+public sealed record PlaceOrderItemRequest(
     Guid ProductId,
     string ProductName,
     int Quantity,
