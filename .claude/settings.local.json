@@ -1,12 +1,16 @@
 {
   "permissions": {
-    "additionalDirectories": [
-      "C:\\Projects\\dotnet\\ochestrator\\.claude\\skills\\create-module"
-    ],
     "allow": [
       "Bash(mv /c/Projects/dotnet/ochestrator/.claude/skills/dotnet-backend-modular-monolith/create-module /c/Projects/dotnet/ochestrator/.claude/skills/dotnet-backend-modular-monolith-eventdriven-create-module)",
       "Bash(mv /c/Projects/dotnet/ochestrator/.claude/skills/dotnet-backend-modular-monolith/modular-monolith-architecture /c/Projects/dotnet/ochestrator/.claude/skills/dotnet-backend-modular-monolith-eventdriven-architecture)",
-      "Bash(rm -rf /c/Projects/dotnet/ochestrator/.claude/skills/dotnet-backend-modular-monolith)"
+      "Bash(rm -rf /c/Projects/dotnet/ochestrator/.claude/skills/dotnet-backend-modular-monolith)",
+      "Edit(/.claude/skills/dotnet-backend-modular-monolith-cqrs-patterns/**)",
+      "Edit(/.claude/skills/dotnet-backend-modular-monolith-domain-ef/**)"
+    ],
+    "additionalDirectories": [
+      "C:\\Projects\\dotnet\\ochestrator\\.claude\\skills\\create-module",
+      "c:\\Projects\\dotnet\\ochestrator\\.claude\\skills\\dotnet-backend-modular-monolith-cqrs-patterns",
+      "c:\\Projects\\dotnet\\ochestrator\\.claude\\skills\\dotnet-backend-modular-monolith-domain-ef"
     ]
   }
 }
