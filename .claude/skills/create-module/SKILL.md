@@ -1,7 +1,6 @@
 ---
 name: create-module
 description: This skill should be used when the user asks to "create a module", "add a new module", "scaffold a module", "generate a module", "add a bounded context", or wants to add a new feature module to the modular monolith. Generates all 5 projects (Domain, Application, Infrastructure, IntegrationEvents, Presentation) following the existing module pattern.
-version: 0.1.0
 ---
 
 # Create Module
@@ -29,7 +28,7 @@ Load `references/module-templates.md` for the complete file templates and genera
 | **Domain** | `.csproj`, `{EntityName}.cs`, `Errors/{EntityName}Errors.cs`, `I{EntityName}Repository.cs` |
 | **Application** | `.csproj`, `Abstractions/I{ModuleName}UnitOfWork.cs`, `Create{EntityName}/` (command + handler), `Get{ModuleName}/` (query + handler), `AssemblyReference.cs` |
 | **IntegrationEvents** | `.csproj`, `{EntityName}CreatedEvent.cs`, `AssemblyReference.cs` |
-| **Infrastructure** | `.csproj`, `Persistence/{ModuleName}DbContext.cs`, `Persistence/{EntityName}Repository.cs`, `Consumers/{EntityName}CreatedConsumer.cs`, `Extensions/{ModuleName}ModuleExtensions.cs`, `AssemblyReference.cs` |
+| **Infrastructure** | `.csproj`, `Persistence/{ModuleName}DbContext.cs`, `Persistence/{EntityName}Repository.cs`, `Consumers/{EntityName}CreatedConsumer.cs`, `Extensions/{ModuleName}Module.cs`, `AssemblyReference.cs` |
 | **Presentation** | `.csproj`, `{ModuleName}Endpoints.cs`, `AssemblyReference.cs` |
 
 Use the Inventory module as the primary reference pattern — it is the cleanest example in the codebase.

@@ -7,46 +7,44 @@ After generating all module files, show the user these exact steps to wire every
 ## 1. Add projects to the solution
 
 ```bash
-dotnet sln add src/Modules/{ModuleName}/Ochestrator.Modules.{ModuleName}.Domain/Ochestrator.Modules.{ModuleName}.Domain.csproj
-dotnet sln add src/Modules/{ModuleName}/Ochestrator.Modules.{ModuleName}.Application/Ochestrator.Modules.{ModuleName}.Application.csproj
-dotnet sln add src/Modules/{ModuleName}/Ochestrator.Modules.{ModuleName}.Infrastructure/Ochestrator.Modules.{ModuleName}.Infrastructure.csproj
-dotnet sln add src/Modules/{ModuleName}/Ochestrator.Modules.{ModuleName}.IntegrationEvents/Ochestrator.Modules.{ModuleName}.IntegrationEvents.csproj
-dotnet sln add src/Modules/{ModuleName}/Ochestrator.Modules.{ModuleName}.Presentation/Ochestrator.Modules.{ModuleName}.Presentation.csproj
+dotnet sln add src/Modules/{ModuleName}/ModularMonolithEventDriven.Modules.{ModuleName}.Domain/ModularMonolithEventDriven.Modules.{ModuleName}.Domain.csproj
+dotnet sln add src/Modules/{ModuleName}/ModularMonolithEventDriven.Modules.{ModuleName}.Application/ModularMonolithEventDriven.Modules.{ModuleName}.Application.csproj
+dotnet sln add src/Modules/{ModuleName}/ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure/ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure.csproj
+dotnet sln add src/Modules/{ModuleName}/ModularMonolithEventDriven.Modules.{ModuleName}.IntegrationEvents/ModularMonolithEventDriven.Modules.{ModuleName}.IntegrationEvents.csproj
+dotnet sln add src/Modules/{ModuleName}/ModularMonolithEventDriven.Modules.{ModuleName}.Presentation/ModularMonolithEventDriven.Modules.{ModuleName}.Presentation.csproj
 ```
 
 ---
 
-## 2. Add project references to `Ochestrator.Api.csproj`
+## 2. Add project references to `ModularMonolithEventDriven.Api.csproj`
 
 ```xml
-<ProjectReference Include="../../Modules/{ModuleName}/Ochestrator.Modules.{ModuleName}.Infrastructure/Ochestrator.Modules.{ModuleName}.Infrastructure.csproj" />
-<ProjectReference Include="../../Modules/{ModuleName}/Ochestrator.Modules.{ModuleName}.Presentation/Ochestrator.Modules.{ModuleName}.Presentation.csproj" />
+<ProjectReference Include="../../Modules/{ModuleName}/ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure/ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure.csproj" />
+<ProjectReference Include="../../Modules/{ModuleName}/ModularMonolithEventDriven.Modules.{ModuleName}.Presentation/ModularMonolithEventDriven.Modules.{ModuleName}.Presentation.csproj" />
 ```
 
 ---
 
 ## 3. Update `Program.cs`
 
-### Add `using` statements (top of file)
+### Add `using` statement (top of file)
 ```csharp
-using Ochestrator.Modules.{ModuleName}.Infrastructure.Extensions;
-using Ochestrator.Modules.{ModuleName}.Infrastructure.Consumers;
-using Ochestrator.Modules.{ModuleName}.Presentation;
+using ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure.Extensions;
 ```
 
-### Register module (alongside other `Add*Module` calls)
+### Register module services (alongside other `Add*Module` calls)
 ```csharp
 builder.Services.Add{ModuleName}Module(builder.Configuration);
 ```
 
-### Register consumer (inside `AddMassTransit`, with other `AddConsumer` calls)
+### Register consumers — add `{ModuleName}Module.ConfigureConsumers` to the `AddInfrastructure` array
 ```csharp
-x.AddConsumer<{EntityName}CreatedConsumer>();
-```
-
-### Map endpoints (alongside other `Map*Endpoints` calls)
-```csharp
-app.Map{ModuleName}Endpoints();
+builder.Services.AddInfrastructure(
+    [
+        // ... existing modules ...
+        {ModuleName}Module.ConfigureConsumers,   // ← add this line
+    ],
+    builder.Configuration);
 ```
 
 ### Add migration (inside `ApplyMigrationsAsync`, alongside other `MigrateAsync` calls)
@@ -56,32 +54,45 @@ await scope.ServiceProvider.GetRequiredService<{ModuleName}DbContext>().Database
 
 Also add the DbContext `using`:
 ```csharp
-using Ochestrator.Modules.{ModuleName}.Infrastructure.Persistence;
+using ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure.Persistence;
 ```
 
 ---
 
-## 4. Create the initial EF migration
+## 4. Update `WebApplicationExtensions.cs`
+
+Add the new module's endpoint mapping to `src/Api/ModularMonolithEventDriven.Api/Extensions/WebApplicationExtensions.cs`:
+
+```csharp
+using ModularMonolithEventDriven.Modules.{ModuleName}.Presentation;
+
+// Inside MapEndpoints():
+app.Map{ModuleName}Endpoints();
+```
+
+---
+
+## 5. Create the initial EF migration
 
 ```bash
 dotnet ef migrations add Initial_{ModuleName} \
-  --project src/Modules/{ModuleName}/Ochestrator.Modules.{ModuleName}.Infrastructure \
-  --startup-project src/Modules/{ModuleName}/Ochestrator.Modules.{ModuleName}.Infrastructure \
+  --project src/Modules/{ModuleName}/ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure \
+  --startup-project src/Modules/{ModuleName}/ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure \
   --context {ModuleName}DbContext
 ```
 
 ---
 
-## 5. Verify the build
+## 6. Verify the build
 
 ```bash
-dotnet build Ochestrator.sln
+dotnet build ModularMonolithEventDriven.sln
 ```
 
 ---
 
 ## Notes
 
-- Offer to make the `Program.cs` and `.csproj` edits directly if the user wants
+- Offer to make the `Program.cs`, `.csproj`, and `WebApplicationExtensions.cs` edits directly if the user wants
 - Offer to run the `dotnet sln add` and `dotnet ef migrations add` commands
 - Existing modules to reference if patterns are unclear: **Inventory** (cleanest), **Payments** (payment flow), **Notifications** (no UoW — read-only logging)

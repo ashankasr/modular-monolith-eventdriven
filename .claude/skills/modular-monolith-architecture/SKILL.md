@@ -1,7 +1,6 @@
 ---
 name: modular-monolith-architecture
 description: This skill should be used when the user asks about "modular monolith architecture", "choreography vs orchestration", "saga pattern", "module structure", "how modules communicate", "bounded context", "when to use this architecture", "layer dependencies", "module DI registration", or asks for an architectural overview of this project.
-version: 0.3.0
 ---
 
 # Modular Monolith Architecture (.NET)

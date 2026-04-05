@@ -314,26 +314,28 @@ public sealed class {EntityName}CreatedConsumer(
 }
 ```
 
-### `Extensions/{ModuleName}ModuleExtensions.cs`
+### `Extensions/{ModuleName}Module.cs`
 ```csharp
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Ochestrator.Common.Application.Extensions;
-using Ochestrator.Modules.{ModuleName}.Application.Abstractions;
-using Ochestrator.Modules.{ModuleName}.Domain;
-using Ochestrator.Modules.{ModuleName}.Infrastructure.Persistence;
+using ModularMonolithEventDriven.Common.Application.Extensions;
+using ModularMonolithEventDriven.Modules.{ModuleName}.Application.Abstractions;
+using ModularMonolithEventDriven.Modules.{ModuleName}.Domain;
+using ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure.Consumers;
+using ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure.Persistence;
 
-namespace Ochestrator.Modules.{ModuleName}.Infrastructure.Extensions;
+namespace ModularMonolithEventDriven.Modules.{ModuleName}.Infrastructure.Extensions;
 
-public static class {ModuleName}ModuleExtensions
+public static class {ModuleName}Module
 {
     public static IServiceCollection Add{ModuleName}Module(
         this IServiceCollection services,
         IConfiguration configuration)
     {
         services.AddDbContext<{ModuleName}DbContext>(opts =>
-            opts.UseSqlServer(configuration.GetConnectionString("OchestratorDb")));
+            opts.UseSqlServer(configuration.GetConnectionString("ModularMonolithEventDrivenDb")));
 
         services.AddScoped<I{ModuleName}UnitOfWork>(sp =>
             sp.GetRequiredService<{ModuleName}DbContext>());
@@ -343,6 +345,11 @@ public static class {ModuleName}ModuleExtensions
         services.AddApplication(typeof(Application.AssemblyReference).Assembly);
 
         return services;
+    }
+
+    public static void ConfigureConsumers(IRegistrationConfigurator configurator)
+    {
+        configurator.AddConsumer<{EntityName}CreatedConsumer>();
     }
 }
 ```
