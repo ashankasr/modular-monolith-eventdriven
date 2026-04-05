@@ -54,7 +54,11 @@ public sealed class CreateProductCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
-        var product = Product.Create(Guid.NewGuid(), command.Name, command.Sku, command.StockQuantity, command.Price);
+        var productResult = Product.Create(Guid.NewGuid(), command.Name, command.Sku, command.StockQuantity, command.Price);
+        if (productResult.IsFailure)
+            return Result.Failure<Guid>(productResult.Error);
+
+        var product = productResult.Value;
         productRepository.Add(product);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return product.Id;   // implicit conversion: TValue → Result<TValue>
@@ -251,9 +255,15 @@ public sealed class Product : AuditableGuidEntity
     public int StockQuantity { get; private set; }
     public decimal Price { get; private set; }
 
-    // Factory method — single point of creation
-    public static Product Create(Guid id, string name, string sku, int stockQuantity, decimal price) =>
-        new(id, name, sku, stockQuantity, price);
+    // Factory method — returns Result<T>, never throws
+    public static Result<Product> Create(Guid id, string name, string sku, int stockQuantity, decimal price)
+    {
+        if (string.IsNullOrEmpty(name))
+            return Result.Failure<Product>(Error.Validation("Product.InvalidName", "Name cannot be empty."));
+        if (string.IsNullOrEmpty(sku))
+            return Result.Failure<Product>(Error.Validation("Product.InvalidSku", "SKU cannot be empty."));
+        return new Product(id, name, sku, stockQuantity, price);
+    }
 
     // Domain behaviour — encapsulates business rules
     public void ReserveStock(int quantity)

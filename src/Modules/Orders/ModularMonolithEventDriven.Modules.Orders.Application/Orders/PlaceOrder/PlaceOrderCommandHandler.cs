@@ -24,7 +24,11 @@ public sealed class PlaceOrderCommandHandler(
             .Select(i => new OrderItem(Guid.NewGuid(), orderId, i.ProductId, i.ProductName, i.Quantity, i.UnitPrice))
             .ToList();
 
-        var order = Order.Create(orderId, command.CustomerId, command.CustomerEmail, items);
+        var orderResult = Order.Create(orderId, command.CustomerId, command.CustomerEmail, items);
+        if (orderResult.IsFailure)
+            return Result.Failure<PlaceOrderResponse>(orderResult.Error);
+
+        var order = orderResult.Value;
         orderRepository.Add(order);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

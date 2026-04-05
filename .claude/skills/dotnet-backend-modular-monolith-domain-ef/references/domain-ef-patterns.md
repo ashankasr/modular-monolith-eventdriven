@@ -52,13 +52,18 @@ public sealed class Order : AuditableGuidEntity
     public string? FailureReason { get; private set; }
     public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
 
-    // Factory method — single validated entry point
-    public static Order Create(Guid id, string customerId, string customerEmail, List<OrderItem> items)
+    // Factory method — returns Result<T> instead of throwing; caller handles failure
+    public static Result<Order> Create(Guid id, string customerId, string customerEmail, List<OrderItem> items)
     {
-        ArgumentException.ThrowIfNullOrEmpty(customerId);
-        ArgumentException.ThrowIfNullOrEmpty(customerEmail);
+        if (string.IsNullOrEmpty(customerId))
+            return Result.Failure<Order>(Error.Validation("Order.InvalidCustomerId", "Customer ID cannot be empty."));
+
+        if (string.IsNullOrEmpty(customerEmail))
+            return Result.Failure<Order>(Error.Validation("Order.InvalidCustomerEmail", "Customer email cannot be empty."));
+
         if (items.Count == 0)
-            throw new ArgumentException("Order must have at least one item.", nameof(items));
+            return Result.Failure<Order>(Error.Validation("Order.NoItems", "Order must have at least one item."));
+
         return new Order(id, customerId, customerEmail, items);
     }
 
@@ -74,7 +79,7 @@ public sealed class Order : AuditableGuidEntity
 - Always `sealed class`
 - Private `_field` for collections — expose as `IReadOnlyList<T>`
 - `private Entity() { }` — EF Core requirement
-- `static Create(...)` validates before constructing
+- `static Create(...)` returns `Result<TEntity>` with `Error.Validation(...)` failures — never throws
 - Behaviour methods use ubiquitous language (`MarkAsCancelled`, `ReserveStock`), never `SetStatus`
 
 ---

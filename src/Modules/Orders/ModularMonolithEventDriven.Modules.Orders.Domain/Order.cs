@@ -1,4 +1,5 @@
 ﻿using ModularMonolithEventDriven.Common.Domain.Primitives;
+using ModularMonolithEventDriven.Common.Domain.Results;
 using ModularMonolithEventDriven.Modules.Orders.Domain.Events;
 
 namespace ModularMonolithEventDriven.Modules.Orders.Domain;
@@ -31,12 +32,16 @@ public sealed class Order : AuditableGuidEntity
     public string? FailureReason { get; private set; }
     public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
 
-    public static Order Create(Guid id, string customerId, string customerEmail, List<OrderItem> items)
+    public static Result<Order> Create(Guid id, string customerId, string customerEmail, List<OrderItem> items)
     {
-        ArgumentException.ThrowIfNullOrEmpty(customerId);
-        ArgumentException.ThrowIfNullOrEmpty(customerEmail);
+        if (string.IsNullOrEmpty(customerId))
+            return Result.Failure<Order>(Error.Validation("Order.InvalidCustomerId", "Customer ID cannot be empty."));
+
+        if (string.IsNullOrEmpty(customerEmail))
+            return Result.Failure<Order>(Error.Validation("Order.InvalidCustomerEmail", "Customer email cannot be empty."));
+
         if (items.Count == 0)
-            throw new ArgumentException("Order must have at least one item.", nameof(items));
+            return Result.Failure<Order>(Error.Validation("Order.NoItems", "Order must have at least one item."));
 
         return new Order(id, customerId, customerEmail, items);
     }
