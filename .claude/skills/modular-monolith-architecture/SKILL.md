@@ -1,7 +1,7 @@
 ---
 name: modular-monolith-architecture
 description: This skill should be used when the user asks about "modular monolith architecture", "choreography vs orchestration", "saga pattern", "module structure", "how modules communicate", "bounded context", "when to use this architecture", "layer dependencies", "module DI registration", or asks for an architectural overview of this project.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Modular Monolith Architecture (.NET)
@@ -48,21 +48,68 @@ Cross-module dependencies are forbidden. Only integration event contracts may be
 
 ## DI Registration Pattern
 
-Each module exposes extension methods on `IServiceCollection`:
+Each module's Infrastructure project contains a `<Module>Module.cs` static class with two responsibilities:
+
+**1. Service registration** — wires up DbContext, repositories, and MediatR:
+```csharp
+// Infrastructure/Extensions/<Module>Module.cs
+public static class <Module>Module
+{
+    public static IServiceCollection Add<Module>Module(
+        this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddDbContext<<Module>DbContext>(...);
+        services.AddScoped<I<Module>Repository, <Module>Repository>();
+        services.AddScoped<I<Module>UnitOfWork>(sp => sp.GetRequiredService<<Module>DbContext>());
+        services.AddApplication(typeof(Application.AssemblyReference).Assembly);
+        return services;
+    }
+}
+```
+
+**2. Consumer registration** — exposes a static method matching `Action<IRegistrationConfigurator>`:
+```csharp
+    public static void ConfigureConsumers(IRegistrationConfigurator configurator)
+    {
+        configurator.AddConsumer<SomeEventConsumer>();
+        configurator.AddConsumer<SomeCommandConsumer>();
+        // Saga state machines also registered here (Orders module)
+    }
+```
+
+## Infrastructure Wiring (host Program.cs)
+
+Module service registrations and broker setup are separate concerns:
 
 ```csharp
-// In Infrastructure project
-public static IServiceCollection Add<Module>Module(this IServiceCollection services, IConfiguration config)
-{
-    services.AddDbContext<<Module>DbContext>(...);
-    services.AddScoped<I<Module>Repository, <Module>Repository>();
-    services.AddScoped<I<Module>UnitOfWork, <Module>UnitOfWork>();
-    return services;
-}
+// 1. Register each module's services
+builder.Services.AddOrdersModule(builder.Configuration);
+builder.Services.AddInventoryModule(builder.Configuration);
+builder.Services.AddPaymentsModule(builder.Configuration);
+builder.Services.AddNotificationsModule(builder.Configuration);
 
-// In host Program.cs
-builder.Services.Add<Module>Module(builder.Configuration);
+// 2. Register MassTransit + RabbitMQ via Common.Infrastructure
+builder.Services.AddInfrastructure(
+    [
+        InventoryModule.ConfigureConsumers,
+        PaymentsModule.ConfigureConsumers,
+        NotificationsModule.ConfigureConsumers,
+        OrdersModule.ConfigureConsumers,
+    ],
+    builder.Configuration);
 ```
+
+`AddInfrastructure` lives in `Common.Infrastructure` and handles `AddMassTransit`, endpoint naming, retry policy, and RabbitMQ host config (reads `ConnectionStrings:RabbitMQ` as an AMQP URI).
+
+## Endpoint Registration Pattern
+
+All Minimal API endpoints are mapped via a single call in `Program.cs`:
+
+```csharp
+app.MapEndpoints();
+```
+
+`MapEndpoints()` is defined in `src/Api/*/Extensions/WebApplicationExtensions.cs` (internal to the API host) and calls each module's `Map<Module>Endpoints()` extension. The API host is the only place that knows about all Presentation projects — Common.Infrastructure does not.
 
 ## When to Use This Architecture
 
@@ -75,6 +122,9 @@ builder.Services.Add<Module>Module(builder.Configuration);
 | File | Purpose |
 |---|---|
 | `src/Api/*/Program.cs` | Module wiring, broker config, auto-migrations |
+| `src/Api/*/Extensions/WebApplicationExtensions.cs` | `MapEndpoints()` — centralises all route registration |
+| `src/Common/*/Infrastructure/Extensions/InfrastructureExtensions.cs` | `AddInfrastructure()` — MassTransit + RabbitMQ setup |
+| `src/Modules/*/Infrastructure/Extensions/<Module>Module.cs` | `Add<Module>Module()` + `ConfigureConsumers()` |
 | `src/Modules/*/Application/Saga/*.cs` | Saga state machine (orchestration) |
 | `src/Modules/*/Infrastructure/Consumers/` | Event consumers (choreography) |
 | `Directory.Packages.props` | Centralized NuGet versions |

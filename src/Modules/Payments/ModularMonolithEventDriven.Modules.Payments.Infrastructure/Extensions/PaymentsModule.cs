@@ -1,14 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ModularMonolithEventDriven.Common.Application.Extensions;
 using ModularMonolithEventDriven.Modules.Payments.Application.Abstractions;
 using ModularMonolithEventDriven.Modules.Payments.Domain;
+using ModularMonolithEventDriven.Modules.Payments.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Payments.Infrastructure.Persistence;
 
 namespace ModularMonolithEventDriven.Modules.Payments.Infrastructure.Extensions;
 
-public static class PaymentsModuleExtensions
+public static class PaymentsModule
 {
     public static IServiceCollection AddPaymentsModule(
         this IServiceCollection services,
@@ -24,5 +26,11 @@ public static class PaymentsModuleExtensions
             typeof(Application.AssemblyReference).Assembly);
 
         return services;
+    }
+
+    public static void ConfigureConsumers(IRegistrationConfigurator configurator)
+    {
+        configurator.AddConsumer<OrderCancelledPaymentConsumer>();
+        configurator.AddConsumer<ProcessPaymentCommandConsumer>();
     }
 }

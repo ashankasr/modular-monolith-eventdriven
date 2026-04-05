@@ -1,20 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ModularMonolithEventDriven.Common.Application.Extensions;
 using ModularMonolithEventDriven.Modules.Inventory.Application.Abstractions;
 using ModularMonolithEventDriven.Modules.Inventory.Domain;
+using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Consumers;
 using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Persistence;
 
 namespace ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Extensions;
 
-public static class InventoryModuleExtensions
+public static class InventoryModule
 {
     public static IServiceCollection AddInventoryModule(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        
         services.AddDbContext<InventoryDbContext>(opts =>
             opts.UseSqlServer(configuration.GetConnectionString("ModularMonolithEventDrivenDb")));
 
@@ -26,5 +27,12 @@ public static class InventoryModuleExtensions
             typeof(Application.AssemblyReference).Assembly);
 
         return services;
+    }
+
+    public static void ConfigureConsumers(IRegistrationConfigurator configurator)
+    {
+        configurator.AddConsumer<OrderCancelledInventoryConsumer>();
+        configurator.AddConsumer<ReserveStockCommandConsumer>();
+        configurator.AddConsumer<ReleaseStockCommandConsumer>();
     }
 }
