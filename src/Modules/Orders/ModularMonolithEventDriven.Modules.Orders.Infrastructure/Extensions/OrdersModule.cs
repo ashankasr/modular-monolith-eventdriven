@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ModularMonolithEventDriven.Common.Application.Extensions;
 using ModularMonolithEventDriven.Modules.Orders.Application.Abstractions;
+using ModularMonolithEventDriven.Modules.Orders.Application.Orders;
 using ModularMonolithEventDriven.Modules.Orders.Application.Saga;
 using ModularMonolithEventDriven.Modules.Orders.Domain;
 using ModularMonolithEventDriven.Modules.Orders.Infrastructure.Persistence;
@@ -24,6 +25,8 @@ public static class OrdersModule
 
         services.AddApplication(
             typeof(Application.AssemblyReference).Assembly);
+
+        OrderMappingConfig.Configure();
 
         return services;
     }
