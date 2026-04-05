@@ -12,7 +12,7 @@ public static class OrdersEndpoints
 {
     public static IEndpointRouteBuilder MapOrdersEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/orders").WithTags("Orders");
+        var group = app.MapGroup("/api/orders").WithTags(Tags.Orders);
 
         // ORCHESTRATION: Place order via Saga state machine
         group.MapPost("/", async (StartSagaRequest request, ISender sender) =>
