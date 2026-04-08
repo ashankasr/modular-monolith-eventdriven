@@ -8,7 +8,9 @@
       "Edit(/.claude/skills/dotnet-backend-modular-monolith-domain-ef/**)",
       "Edit(/.claude/skills/dotnet-backend-modular-monolith-integration-events-consumers/**)",
       "Edit(/.claude/skills/dotnet-backend-modular-monolith-presentation-endpoints/**)",
-      "Edit(/.claude/skills/dotnet-backend-modular-monolith-saga/**)"
+      "Edit(/.claude/skills/dotnet-backend-modular-monolith-saga/**)",
+      "Bash(grep -l \"OutboxMessages\" c:/Projects/dotnet/ochestrator/src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Infrastructure/Persistence/Migrations/*.cs)",
+      "Bash(grep -l \"OutboxMessages\" c:/Projects/dotnet/ochestrator/src/Modules/Inventory/ModularMonolithEventDriven.Modules.Inventory.Infrastructure/Persistence/Migrations/*.cs)"
     ],
     "additionalDirectories": [
       "C:\\Projects\\dotnet\\ochestrator\\.claude\\skills\\create-module",
