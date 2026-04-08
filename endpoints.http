@@ -21,12 +21,12 @@ GET {{baseUrl}}/api/inventory/products
 Accept: application/json
 
 # =============================================================
-# ORDERS — Choreography (event-driven, no central coordinator)
+# ORDERS — Orchestration (Saga state machine coordinates steps)
 # =============================================================
 
-### Place order via Choreography (happy path)
-# @name choreographyOrder
-POST {{baseUrl}}/api/orders/choreography
+### Place order (happy path)
+# @name placeOrder
+POST {{baseUrl}}/api/orders
 Content-Type: application/json
 
 {
@@ -34,7 +34,7 @@ Content-Type: application/json
   "customerEmail": "alice@example.com",
   "items": [
     {
-      "productId": "{{createProduct.response.body.$.value}}",
+      "productId": "{{createProduct.response.body.$.id}}",
       "productName": "Widget Pro",
       "quantity": 2,
       "unitPrice": 29.99
@@ -44,8 +44,8 @@ Content-Type: application/json
   "simulateStockFailure": false
 }
 
-### Place order via Choreography — simulate payment failure
-POST {{baseUrl}}/api/orders/choreography
+### Place order — simulate payment failure (triggers stock compensation)
+POST {{baseUrl}}/api/orders
 Content-Type: application/json
 
 {
@@ -63,8 +63,8 @@ Content-Type: application/json
   "simulateStockFailure": false
 }
 
-### Place order via Choreography — simulate stock failure
-POST {{baseUrl}}/api/orders/choreography
+### Place order — simulate stock failure
+POST {{baseUrl}}/api/orders
 Content-Type: application/json
 
 {
@@ -83,89 +83,24 @@ Content-Type: application/json
 }
 
 # =============================================================
-# ORDERS — Orchestration (Saga state machine)
+# ORDERS — Choreography (cancel order, each module reacts independently)
 # =============================================================
 
-### Place order via Orchestration / Saga (happy path)
-# @name sagaOrder
-POST {{baseUrl}}/api/orders/orchestration
+### Cancel order (publishes OrderCancelledEvent — Inventory, Payments, Notifications react autonomously)
+# Replace {orderId} with an actual order ID from a POST /api/orders response
+@orderId = 00000000-0000-0000-0000-000000000000
+
+POST {{baseUrl}}/api/orders/{{orderId}}/cancel
 Content-Type: application/json
 
 {
-  "customerId": "customer-001",
-  "customerEmail": "alice@example.com",
-  "items": [
-    {
-      "productId": "00000000-0000-0000-0000-000000000000",
-      "productName": "Widget Pro",
-      "quantity": 2,
-      "unitPrice": 29.99
-    }
-  ],
-  "simulatePaymentFailure": false,
-  "simulateStockFailure": false
-}
-
-### Place order via Orchestration — simulate payment failure (triggers compensation)
-POST {{baseUrl}}/api/orders/orchestration
-Content-Type: application/json
-
-{
-  "customerId": "customer-002",
-  "customerEmail": "bob@example.com",
-  "items": [
-    {
-      "productId": "00000000-0000-0000-0000-000000000000",
-      "productName": "Widget Pro",
-      "quantity": 1,
-      "unitPrice": 29.99
-    }
-  ],
-  "simulatePaymentFailure": true,
-  "simulateStockFailure": false
-}
-
-### Place order via Orchestration — simulate stock failure
-POST {{baseUrl}}/api/orders/orchestration
-Content-Type: application/json
-
-{
-  "customerId": "customer-003",
-  "customerEmail": "carol@example.com",
-  "items": [
-    {
-      "productId": "00000000-0000-0000-0000-000000000000",
-      "productName": "Widget Pro",
-      "quantity": 1,
-      "unitPrice": 29.99
-    }
-  ],
-  "simulatePaymentFailure": false,
-  "simulateStockFailure": true
+  "reason": "Cancelled by customer"
 }
 
 # =============================================================
 # ORDERS — Query
 # =============================================================
 
-### Get order by ID (replace with actual orderId from above responses)
-@orderId = 00000000-0000-0000-0000-000000000000
-
+### Get order by ID
 GET {{baseUrl}}/api/orders/{{orderId}}
-Accept: application/json
-
-# =============================================================
-# PAYMENTS
-# =============================================================
-
-### Get all payments
-GET {{baseUrl}}/api/payments
-Accept: application/json
-
-# =============================================================
-# NOTIFICATIONS
-# =============================================================
-
-### Get all notifications
-GET {{baseUrl}}/api/notifications
 Accept: application/json
