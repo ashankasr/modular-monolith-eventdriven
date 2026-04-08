@@ -21,8 +21,6 @@ public sealed class Order : AuditableGuidEntity
         _items = items;
         Status = OrderStatus.Pending;
         TotalAmount = items.Sum(i => i.UnitPrice * i.Quantity);
-
-        RaiseDomainEvent(new OrderCreatedDomainEvent(id, customerId));
     }
 
     public string CustomerId { get; private set; } = string.Empty;
@@ -43,7 +41,9 @@ public sealed class Order : AuditableGuidEntity
         if (items.Count == 0)
             return Result.Failure<Order>(Error.Validation("Order.NoItems", "Order must have at least one item."));
 
-        return new Order(id, customerId, customerEmail, items);
+        var order = new Order(id, customerId, customerEmail, items);
+        order.RaiseDomainEvent(new OrderCreatedDomainEvent(id, customerId));
+        return order;
     }
 
     public void MarkAsStockReserved() => Status = OrderStatus.StockReserved;
