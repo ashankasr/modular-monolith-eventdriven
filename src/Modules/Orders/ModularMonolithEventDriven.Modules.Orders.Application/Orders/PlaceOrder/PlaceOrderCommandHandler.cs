@@ -18,7 +18,7 @@ public sealed class PlaceOrderCommandHandler(
         CancellationToken cancellationToken)
     {
         var orderId = Guid.NewGuid();
-        var correlationId = Guid.NewGuid();
+        var correlationId = orderId;
 
         var items = command.Items
             .Select(i => new OrderItem(Guid.NewGuid(), orderId, i.ProductId, i.ProductName, i.Quantity, i.UnitPrice))
