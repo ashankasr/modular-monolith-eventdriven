@@ -1,6 +1,8 @@
-﻿namespace ModularMonolithEventDriven.Modules.Orders.IntegrationEvents;
+namespace ModularMonolithEventDriven.Modules.Orders.IntegrationEvents;
 
-public sealed record ReserveStockCommand(
-    Guid CorrelationId,
-    Guid OrderId,
-    List<OrderItemDto> Items);
+public sealed class ReserveStockCommand
+{
+    public Guid CorrelationId { get; set; }
+    public Guid OrderId { get; set; }
+    public List<OrderItemDto> Items { get; set; } = [];
+}

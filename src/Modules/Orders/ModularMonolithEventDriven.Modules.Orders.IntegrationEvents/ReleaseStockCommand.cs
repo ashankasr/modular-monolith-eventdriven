@@ -1,6 +1,8 @@
-﻿namespace ModularMonolithEventDriven.Modules.Orders.IntegrationEvents;
+namespace ModularMonolithEventDriven.Modules.Orders.IntegrationEvents;
 
-public sealed record ReleaseStockCommand(
-    Guid CorrelationId,
-    Guid OrderId,
-    Guid ReservationId);
+public sealed class ReleaseStockCommand
+{
+    public Guid CorrelationId { get; set; }
+    public Guid OrderId { get; set; }
+    public Guid ReservationId { get; set; }
+}
