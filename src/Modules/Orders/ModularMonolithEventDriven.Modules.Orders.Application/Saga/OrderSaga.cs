@@ -1,4 +1,4 @@
-﻿using MassTransit;
+using MassTransit;
 using Microsoft.Extensions.Logging;
 using ModularMonolithEventDriven.Modules.Inventory.IntegrationEvents;
 using ModularMonolithEventDriven.Modules.Orders.IntegrationEvents;
@@ -47,11 +47,13 @@ public sealed class OrderSaga : MassTransitStateMachine<OrderSagaState>
                     ctx.Saga.StartedAt = DateTime.UtcNow;
                     _logger.LogInformation("[SAGA] Order {OrderId} saga started. Sending ReserveStockCommand.", ctx.Saga.OrderId);
                 })
-                .PublishAsync(ctx => ctx.Init<ReserveStockCommand>(new ReserveStockCommand(
+                .TransitionTo(OrderSubmitted)
+                .PublishAsync(ctx => ctx.Init<ReserveStockCommand>(new
+                {
                     ctx.Saga.CorrelationId,
                     ctx.Saga.OrderId,
-                    ctx.Message.Items)))
-                .TransitionTo(OrderSubmitted));
+                    ctx.Message.Items
+                })));
 
         During(OrderSubmitted,
             When(StockWasReserved)
@@ -60,13 +62,15 @@ public sealed class OrderSaga : MassTransitStateMachine<OrderSagaState>
                     ctx.Saga.ReservationId = ctx.Message.ReservationId;
                     _logger.LogInformation("[SAGA] Stock reserved for Order {OrderId}. ReservationId: {ReservationId}. Sending ProcessPaymentCommand.", ctx.Saga.OrderId, ctx.Message.ReservationId);
                 })
-                .PublishAsync(ctx => ctx.Init<ProcessPaymentCommand>(new ProcessPaymentCommand(
+                .TransitionTo(StockReserved)
+                .PublishAsync(ctx => ctx.Init<ProcessPaymentCommand>(new
+                {
                     ctx.Saga.CorrelationId,
                     ctx.Saga.OrderId,
                     ctx.Saga.CustomerId,
                     ctx.Saga.CustomerEmail,
-                    ctx.Saga.TotalAmount)))
-                .TransitionTo(StockReserved),
+                    Amount = ctx.Saga.TotalAmount
+                })),
 
             When(StockReservationFailed)
                 .Then(ctx =>
@@ -74,13 +78,15 @@ public sealed class OrderSaga : MassTransitStateMachine<OrderSagaState>
                     ctx.Saga.FailureReason = ctx.Message.Reason;
                     _logger.LogWarning("[SAGA] Stock reservation FAILED for Order {OrderId}. Reason: {Reason}", ctx.Saga.OrderId, ctx.Message.Reason);
                 })
-                .PublishAsync(ctx => ctx.Init<SendOrderNotificationCommand>(new SendOrderNotificationCommand(
+                .TransitionTo(Failed)
+                .PublishAsync(ctx => ctx.Init<SendOrderNotificationCommand>(new
+                {
                     ctx.Saga.CorrelationId,
                     ctx.Saga.OrderId,
                     ctx.Saga.CustomerEmail,
-                    "Failed",
-                    $"Your order failed: {ctx.Saga.FailureReason}")))
-                .TransitionTo(Failed)
+                    Status = "Failed",
+                    Message = $"Your order failed: {ctx.Saga.FailureReason}"
+                }))
                 .Finalize());
 
         During(StockReserved,
@@ -91,13 +97,15 @@ public sealed class OrderSaga : MassTransitStateMachine<OrderSagaState>
                     ctx.Saga.CompletedAt = DateTime.UtcNow;
                     _logger.LogInformation("[SAGA] Payment processed for Order {OrderId}. PaymentId: {PaymentId}. Order COMPLETED.", ctx.Saga.OrderId, ctx.Message.PaymentId);
                 })
-                .PublishAsync(ctx => ctx.Init<SendOrderNotificationCommand>(new SendOrderNotificationCommand(
+                .TransitionTo(Completed)
+                .PublishAsync(ctx => ctx.Init<SendOrderNotificationCommand>(new
+                {
                     ctx.Saga.CorrelationId,
                     ctx.Saga.OrderId,
                     ctx.Saga.CustomerEmail,
-                    "Completed",
-                    $"Your order has been confirmed! Payment: {ctx.Saga.PaymentId}")))
-                .TransitionTo(Completed)
+                    Status = "Completed",
+                    Message = $"Your order has been confirmed! Payment: {ctx.Saga.PaymentId}"
+                }))
                 .Finalize(),
 
             When(PaymentFailed)
@@ -106,18 +114,22 @@ public sealed class OrderSaga : MassTransitStateMachine<OrderSagaState>
                     ctx.Saga.FailureReason = ctx.Message.Reason;
                     _logger.LogWarning("[SAGA] Payment FAILED for Order {OrderId}. Reason: {Reason}. Releasing stock.", ctx.Saga.OrderId, ctx.Message.Reason);
                 })
+                .TransitionTo(Failed)
                 // Compensating transaction: release the reserved stock
-                .PublishAsync(ctx => ctx.Init<ReleaseStockCommand>(new ReleaseStockCommand(
+                .PublishAsync(ctx => ctx.Init<ReleaseStockCommand>(new
+                {
                     ctx.Saga.CorrelationId,
                     ctx.Saga.OrderId,
-                    ctx.Saga.ReservationId!.Value)))
-                .PublishAsync(ctx => ctx.Init<SendOrderNotificationCommand>(new SendOrderNotificationCommand(
+                    ReservationId = ctx.Saga.ReservationId!.Value
+                }))
+                .PublishAsync(ctx => ctx.Init<SendOrderNotificationCommand>(new
+                {
                     ctx.Saga.CorrelationId,
                     ctx.Saga.OrderId,
                     ctx.Saga.CustomerEmail,
-                    "Failed",
-                    $"Your order failed during payment: {ctx.Saga.FailureReason}")))
-                .TransitionTo(Failed)
+                    Status = "Failed",
+                    Message = $"Your order failed during payment: {ctx.Saga.FailureReason}"
+                }))
                 .Finalize());
 
         SetCompletedWhenFinalized();
