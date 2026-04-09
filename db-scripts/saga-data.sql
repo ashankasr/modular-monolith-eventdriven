@@ -3,7 +3,7 @@ SELECT * FROM [inventory].[StockReservationItems]
 SELECT * FROM [inventory].[Products]
 
 SELECT * FROM [orders].[OrderItems]
-SELECT * FROM [orders].[Orders]
+SELECT * FROM [orders].[Orders] order by [CreatedAt]
 
 SELECT * FROM [orders].[OrderSagaState]
 
