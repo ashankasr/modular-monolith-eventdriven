@@ -10,15 +10,14 @@ namespace ModularMonolithEventDriven.Modules.Orders.Application.Orders.PlaceOrde
 
 public sealed class PlaceOrderCommandHandler(
     IOrderRepository orderRepository,
-    IOrdersUnitOfWork unitOfWork,
-    IPublishEndpoint publishEndpoint) : ICommandHandler<PlaceOrderCommand, PlaceOrderResponse>
+    IPublishEndpoint publishEndpoint,
+    IOrdersUnitOfWork unitOfWork) : ICommandHandler<PlaceOrderCommand, PlaceOrderResponse>
 {
     public async Task<Result<PlaceOrderResponse>> Handle(
         PlaceOrderCommand command,
         CancellationToken cancellationToken)
     {
         var orderId = Guid.NewGuid();
-        var correlationId = orderId;
 
         var items = command.Items
             .Select(i => new OrderItem(Guid.NewGuid(), orderId, i.ProductId, i.ProductName, i.Quantity, i.UnitPrice))
@@ -28,21 +27,17 @@ public sealed class PlaceOrderCommandHandler(
         if (orderResult.IsFailure)
             return Result.Failure<PlaceOrderResponse>(orderResult.Error);
 
-        var order = orderResult.Value;
-        orderRepository.Add(order);
+        orderRepository.Add(orderResult.Value);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        // Send message to start the saga
         await publishEndpoint.Publish(new OrderSagaStartMessage(
-            correlationId,
-            orderId,
-            command.CustomerId,
-            command.CustomerEmail,
-            items.Select(i => new OrderItemDto(i.ProductId, i.ProductName, i.Quantity, i.UnitPrice)).ToList(),
-            order.TotalAmount,
-            command.SimulatePaymentFailure,
-            command.SimulateStockFailure), cancellationToken);
+            CorrelationId: orderResult.Value.Id,
+            OrderId: orderResult.Value.Id,
+            orderResult.Value.CustomerId,
+            orderResult.Value.CustomerEmail,
+            orderResult.Value.Items.Select(i => new OrderItemDto(i.ProductId, i.ProductName, i.Quantity, i.UnitPrice)).ToList(),
+            orderResult.Value.TotalAmount), cancellationToken);
 
-        return new PlaceOrderResponse(orderId, correlationId);
+        return new PlaceOrderResponse(orderId, CorrelationId: orderId);
     }
 }

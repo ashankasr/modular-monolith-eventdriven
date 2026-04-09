@@ -10,9 +10,9 @@ POST {{baseUrl}}/api/inventory/products
 Content-Type: application/json
 
 {
-  "name": "Widget Pro",
-  "sku": "WGT-001",
-  "stockQuantity": 100,
+  "name": "iPhone 17",
+  "sku": "Max Pro",
+  "stockQuantity": 50,
   "price": 29.99
 }
 
@@ -30,18 +30,16 @@ POST {{baseUrl}}/api/orders
 Content-Type: application/json
 
 {
-  "customerId": "customer-001",
-  "customerEmail": "alice@example.com",
+  "customerId": "customer-004",
+  "customerEmail": "alice04@example.com",
   "items": [
     {
       "productId": "{{createProduct.response.body.$.id}}",
       "productName": "Widget Pro",
-      "quantity": 2,
+      "quantity": 4,
       "unitPrice": 29.99
     }
-  ],
-  "simulatePaymentFailure": false,
-  "simulateStockFailure": false
+  ]
 }
 
 ### Place order — simulate payment failure (triggers stock compensation)
@@ -88,7 +86,7 @@ Content-Type: application/json
 
 ### Cancel order (publishes OrderCancelledEvent — Inventory, Payments, Notifications react autonomously)
 # Replace {orderId} with an actual order ID from a POST /api/orders response
-@orderId = 00000000-0000-0000-0000-000000000000
+@orderId = A9E05EE1-B07C-4914-926B-C35DF1D35584
 
 POST {{baseUrl}}/api/orders/{{orderId}}/cancel
 Content-Type: application/json

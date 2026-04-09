@@ -20,9 +20,7 @@ public static class OrdersEndpoints
             var command = new PlaceOrderCommand(
                 request.CustomerId,
                 request.CustomerEmail,
-                request.Items.Select(i => new PlaceOrderItemDto(i.ProductId, i.ProductName, i.Quantity, i.UnitPrice)).ToList(),
-                request.SimulatePaymentFailure,
-                request.SimulateStockFailure);
+                [.. request.Items.Select(i => new PlaceOrderItemDto(i.ProductId, i.ProductName, i.Quantity, i.UnitPrice))]);
 
             var result = await sender.Send(command);
             return result.IsSuccess
@@ -59,9 +57,7 @@ public static class OrdersEndpoints
 public sealed record PlaceOrderRequest(
     string CustomerId,
     string CustomerEmail,
-    List<PlaceOrderItemRequest> Items,
-    bool SimulatePaymentFailure = false,
-    bool SimulateStockFailure = false);
+    List<PlaceOrderItemRequest> Items);
 
 public sealed record PlaceOrderItemRequest(
     Guid ProductId,

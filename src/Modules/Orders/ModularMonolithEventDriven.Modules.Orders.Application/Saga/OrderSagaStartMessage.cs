@@ -8,6 +8,4 @@ public sealed record OrderSagaStartMessage(
     string CustomerId,
     string CustomerEmail,
     List<OrderItemDto> Items,
-    decimal TotalAmount,
-    bool SimulatePaymentFailure,
-    bool SimulateStockFailure);
+    decimal TotalAmount);

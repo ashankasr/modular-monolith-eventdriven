@@ -5,9 +5,7 @@ namespace ModularMonolithEventDriven.Modules.Orders.Application.Orders.PlaceOrde
 public sealed record PlaceOrderCommand(
     string CustomerId,
     string CustomerEmail,
-    List<PlaceOrderItemDto> Items,
-    bool SimulatePaymentFailure = false,
-    bool SimulateStockFailure = false) : ICommand<PlaceOrderResponse>;
+    List<PlaceOrderItemDto> Items) : ICommand<PlaceOrderResponse>;
 
 public sealed record PlaceOrderItemDto(
     Guid ProductId,

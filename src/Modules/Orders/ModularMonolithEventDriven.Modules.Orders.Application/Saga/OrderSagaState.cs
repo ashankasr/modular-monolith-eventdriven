@@ -13,8 +13,6 @@ public sealed class OrderSagaState : SagaStateMachineInstance
     public Guid? ReservationId { get; set; }
     public Guid? PaymentId { get; set; }
     public string? FailureReason { get; set; }
-    public bool SimulatePaymentFailure { get; set; }
-    public bool SimulateStockFailure { get; set; }
     public DateTime StartedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
 }
