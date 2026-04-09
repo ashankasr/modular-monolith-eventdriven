@@ -34,9 +34,9 @@ Content-Type: application/json
   "customerEmail": "alice04@example.com",
   "items": [
     {
-      "productId": "{{createProduct.response.body.$.id}}",
+      "productId": "92870439-404E-4466-AFDE-1DB8936CD87D",
       "productName": "Widget Pro",
-      "quantity": 4,
+      "quantity": 100,
       "unitPrice": 29.99
     }
   ]
