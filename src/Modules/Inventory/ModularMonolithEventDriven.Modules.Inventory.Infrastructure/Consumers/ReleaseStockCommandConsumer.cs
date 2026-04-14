@@ -1,7 +1,6 @@
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using ModularMonolithEventDriven.Modules.Inventory.Domain;
-using ModularMonolithEventDriven.Modules.Inventory.IntegrationEvents;
 using ModularMonolithEventDriven.Modules.Inventory.Infrastructure.Persistence;
 using ModularMonolithEventDriven.Modules.Orders.IntegrationEvents;
 
@@ -31,10 +30,10 @@ public sealed class ReleaseStockCommandConsumer(
             product?.ReleaseStock(item.Quantity);
         }
 
-        reservation.Release();
+        reservation.Release(msg.CorrelationId);
         await dbContext.SaveChangesAsync(context.CancellationToken);
+        // StockReleasedEvent is published by StockReleasedDomainEventHandler via the outbox
 
         logger.LogInformation("[ORCHESTRATION] Stock released for Order {OrderId}", msg.OrderId);
-        await context.Publish(new StockReleasedEvent(msg.CorrelationId, msg.OrderId, msg.ReservationId, DateTime.UtcNow));
     }
 }

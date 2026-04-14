@@ -6,7 +6,7 @@ using Quartz;
 namespace ModularMonolithEventDriven.Common.Infrastructure.Jobs;
 
 /// <summary>
-/// Quartz job that runs every 30 seconds.
+/// Quartz job that runs every 10 seconds.
 /// Resolves all registered IOutboxMessageProcessor implementations (one per module)
 /// and calls ProcessAsync on each, dispatching pending domain events via MediatR.
 /// </summary>

@@ -76,7 +76,7 @@ public static class InfrastructureExtensions
                 .ForJob(ProcessOutboxMessagesJob.Key)
                 .WithIdentity("outbox-trigger")
                 .WithSimpleSchedule(s => s
-                    .WithIntervalInSeconds(30)
+                    .WithIntervalInSeconds(10)
                     .RepeatForever()));
         });
 

@@ -54,5 +54,9 @@ public sealed class Order : AuditableGuidEntity
         Status = OrderStatus.Failed;
         FailureReason = reason;
     }
-    public void MarkAsCancelled() => Status = OrderStatus.Cancelled;
+    public void MarkAsCancelled(string reason)
+    {
+        Status = OrderStatus.Cancelled;
+        RaiseDomainEvent(new OrderCancelledDomainEvent(Id, reason));
+    }
 }

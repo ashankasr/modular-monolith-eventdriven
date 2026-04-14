@@ -39,30 +39,23 @@ public sealed class ReserveStockCommandConsumer(
         foreach (var item in msg.Items)
         {
             var product = products.First(p => p.Id == item.ProductId);
-            var reserveResult = product.ReserveStock(item.Quantity);
-            if (reserveResult.IsFailure)
-            {
-                logger.LogWarning("[ORCHESTRATION] Stock reservation FAILED for Order {OrderId}. {Reason}", msg.OrderId, reserveResult.Error.Description);
-                await context.Publish(new StockReservationFailedEvent(msg.CorrelationId, msg.OrderId, reserveResult.Error.Description, DateTime.UtcNow));
-                return;
-            }
+            product.ReserveStock(item.Quantity);
         }
 
         var reservationId = Guid.NewGuid();
         var reservationItems = msg.Items.Select(i => new ReservationItem(i.ProductId, i.Quantity)).ToList();
-        var reservationResult = StockReservation.Create(reservationId, msg.OrderId, reservationItems);
+        var reservationResult = StockReservation.Create(reservationId, msg.OrderId, msg.CorrelationId, reservationItems);
         if (reservationResult.IsFailure)
         {
             logger.LogError("[ORCHESTRATION] Failed to create reservation for Order {OrderId}. {Reason}", msg.OrderId, reservationResult.Error.Description);
             await context.Publish(new StockReservationFailedEvent(msg.CorrelationId, msg.OrderId, reservationResult.Error.Description, DateTime.UtcNow));
             return;
         }
-        var reservation = reservationResult.Value;
 
-        reservationRepository.Add(reservation);
+        reservationRepository.Add(reservationResult.Value);
         await dbContext.SaveChangesAsync(context.CancellationToken);
+        // StockReservedEvent is published by StockReservedDomainEventHandler via the outbox
 
         logger.LogInformation("[ORCHESTRATION] Stock reserved for Order {OrderId}. ReservationId: {ReservationId}", msg.OrderId, reservationId);
-        await context.Publish(new StockReservedEvent(msg.CorrelationId, msg.OrderId, reservationId, DateTime.UtcNow));
     }
 }
