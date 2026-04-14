@@ -4,8 +4,8 @@ A **.NET 9 Modular Monolith** demonstrating two distributed transaction patterns
 
 | Pattern | Endpoint | Description |
 |---|---|---|
-| **Choreography** | `POST /api/orders/choreography` | Modules react to events autonomously |
-| **Orchestration** | `POST /api/orders/orchestration` | Saga state machine coordinates every step with compensation |
+| **Orchestration** | `POST /api/orders` | Saga state machine coordinates every step (ReserveStock → ProcessPayment → Notify) with compensation on failure |
+| **Choreography** | `POST /api/orders/{id}/cancel` | `OrderCancelledEvent` published — each module reacts autonomously with no central coordinator |
 
 ---
 
@@ -128,7 +128,7 @@ Once running:
 
 ## 5. Try the API
 
-### Seed inventory first
+### 1. Seed inventory
 
 ```http
 POST /api/inventory/products
@@ -136,42 +136,54 @@ Content-Type: application/json
 
 {
   "name": "Widget",
-  "price": 9.99,
-  "stock": 100
+  "sku": "WIDGET-001",
+  "stockQuantity": 100,
+  "price": 9.99
 }
 ```
 
-### Place an order (Choreography)
+Copy the returned `id` — you'll need it as `productId` below.
+
+### 2. Place an order (Orchestration / Saga)
 
 ```http
-POST /api/orders/choreography
+POST /api/orders
 Content-Type: application/json
 
 {
-  "productId": "<product-id>",
-  "quantity": 1
+  "customerId": "customer-123",
+  "customerEmail": "customer@example.com",
+  "items": [
+    {
+      "productId": "<product-id>",
+      "productName": "Widget",
+      "quantity": 2,
+      "unitPrice": 9.99
+    }
+  ]
 }
 ```
 
-### Place an order (Orchestration / Saga)
+Watch the logs — the saga coordinates: `ReserveStock → ProcessPayment → Notify`. Try with an unknown `productId` to see compensation fire.
+
+### 3. Cancel an order (Choreography)
 
 ```http
-POST /api/orders/orchestration
+POST /api/orders/{orderId}/cancel
 Content-Type: application/json
 
 {
-  "productId": "<product-id>",
-  "quantity": 1
+  "reason": "Changed my mind"
 }
 ```
+
+`OrderCancelledEvent` is published. Each module reacts independently: Inventory releases stock, Payments refunds, Notifications sends a cancellation email.
 
 ### Other endpoints
 
 ```
 GET /api/inventory/products
 GET /api/orders/{orderId}
-GET /api/payments
-GET /api/notifications
 ```
 
 ---
@@ -182,29 +194,31 @@ Migrations are auto-applied on startup, but you can run them manually or add new
 
 ### Add a migration
 
+Run from the repo root. Use full `.csproj` paths:
+
 ```bash
 # Orders
 dotnet ef migrations add <MigrationName> \
-  --project src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Infrastructure \
-  --startup-project src/Api/ModularMonolithEventDriven.Api \
+  --project src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Infrastructure/ModularMonolithEventDriven.Modules.Orders.Infrastructure.csproj \
+  --startup-project src/Api/ModularMonolithEventDriven.Api/ModularMonolithEventDriven.Api.csproj \
   --context OrdersDbContext
 
 # Inventory
 dotnet ef migrations add <MigrationName> \
-  --project src/Modules/Inventory/ModularMonolithEventDriven.Modules.Inventory.Infrastructure \
-  --startup-project src/Api/ModularMonolithEventDriven.Api \
+  --project src/Modules/Inventory/ModularMonolithEventDriven.Modules.Inventory.Infrastructure/ModularMonolithEventDriven.Modules.Inventory.Infrastructure.csproj \
+  --startup-project src/Api/ModularMonolithEventDriven.Api/ModularMonolithEventDriven.Api.csproj \
   --context InventoryDbContext
 
 # Payments
 dotnet ef migrations add <MigrationName> \
-  --project src/Modules/Payments/ModularMonolithEventDriven.Modules.Payments.Infrastructure \
-  --startup-project src/Api/ModularMonolithEventDriven.Api \
+  --project src/Modules/Payments/ModularMonolithEventDriven.Modules.Payments.Infrastructure/ModularMonolithEventDriven.Modules.Payments.Infrastructure.csproj \
+  --startup-project src/Api/ModularMonolithEventDriven.Api/ModularMonolithEventDriven.Api.csproj \
   --context PaymentsDbContext
 
 # Notifications
 dotnet ef migrations add <MigrationName> \
-  --project src/Modules/Notifications/ModularMonolithEventDriven.Modules.Notifications.Infrastructure \
-  --startup-project src/Api/ModularMonolithEventDriven.Api \
+  --project src/Modules/Notifications/ModularMonolithEventDriven.Modules.Notifications.Infrastructure/ModularMonolithEventDriven.Modules.Notifications.Infrastructure.csproj \
+  --startup-project src/Api/ModularMonolithEventDriven.Api/ModularMonolithEventDriven.Api.csproj \
   --context NotificationsDbContext
 ```
 
@@ -212,8 +226,8 @@ dotnet ef migrations add <MigrationName> \
 
 ```bash
 dotnet ef database update \
-  --project src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Infrastructure \
-  --startup-project src/Api/ModularMonolithEventDriven.Api \
+  --project src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Infrastructure/ModularMonolithEventDriven.Modules.Orders.Infrastructure.csproj \
+  --startup-project src/Api/ModularMonolithEventDriven.Api/ModularMonolithEventDriven.Api.csproj \
   --context OrdersDbContext
 ```
 
@@ -251,5 +265,5 @@ src/
 |---|---|
 | `Cannot open database` | Verify SQL Server is running and the connection string in user secrets is correct |
 | `Connection refused` on RabbitMQ | Run `docker compose up -d` and wait for the health check to pass |
-| Migrations not found | Ensure EF Core CLI is installed: `dotnet tool install --global dotnet-ef` |
+| Migrations not found | Ensure EF Core CLI is installed: `dotnet tool install --global dotnet-ef` — verify with `dotnet ef --version` |
 | Port already in use | Check `launchSettings.json` or set `ASPNETCORE_URLS` env var |
