@@ -5,7 +5,7 @@ description: This skill should be used when the user asks to "create a module", 
 
 # Create Module
 
-Generate a complete new module for this .NET 9 Modular Monolith application.
+Generate a complete new module for this .NET 10 Modular Monolith application.
 
 **Usage:** `/create-module <ModuleName> [EntityName]`
 - `ModuleName` — PascalCase module name, e.g. `Shipping`, `Reviews`, `Catalog`

@@ -5,7 +5,7 @@ description: Use this skill when the user asks to "implement a feature end-to-en
 
 # Full-Pipeline Feature Implementation
 
-This skill guides end-to-end feature delivery in this .NET 9 Modular Monolith — from initial brainstorm through every layer to a working, tested HTTP endpoint.
+This skill guides end-to-end feature delivery in this .NET 10 Modular Monolith — from initial brainstorm through every layer to a working, tested HTTP endpoint.
 
 Load `references/feature-pipeline.md` for the complete guide covering:
 

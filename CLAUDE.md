@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This project is a **blueprint** for building production-grade **.NET 9 Modular Monolith** applications with event-driven architecture. It demonstrates two distributed transaction patterns side-by-side so developers can learn when and how to apply each:
+This project is a **blueprint** for building production-grade **.NET 10 Modular Monolith** applications with event-driven architecture. It demonstrates two distributed transaction patterns side-by-side so developers can learn when and how to apply each:
 
 Treat every design decision here as an intentional teaching example, not just implementation code.
 
@@ -50,13 +50,13 @@ These are architectural constraints — apply them consistently when adding or m
 
 | Concern | Library | Version |
 |---|---|---|
-| Message broker | MassTransit + RabbitMQ | 8.3.6 |
-| Saga persistence | MassTransit.EntityFrameworkCore | 8.3.6 |
-| ORM | Entity Framework Core (SQL Server) | 9.0.3 |
+| Message broker | MassTransit + RabbitMQ | 9.1.0 |
+| Saga persistence | MassTransit.EntityFrameworkCore | 9.1.0 |
+| ORM | Entity Framework Core (SQL Server) | 10.0.0 |
 | CQRS | MediatR | 12.4.1 |
-| Validation | FluentValidation | 11.11.0 |
-| Mapping | Mapster | 7.4.0 |
-| Logging | Serilog.AspNetCore | 8.0.3 |
+| Validation | FluentValidation | 12.1.1 |
+| Mapping | Mapster | 10.0.7 |
+| Logging | Serilog.AspNetCore | 10.0.0 |
 | API docs | Scalar.AspNetCore | 2.1.7 |
 
 NuGet versions are centrally managed in `Directory.Packages.props`.

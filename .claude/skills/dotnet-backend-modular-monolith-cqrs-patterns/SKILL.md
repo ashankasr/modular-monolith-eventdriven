@@ -5,7 +5,7 @@ description: Use this skill when the user asks to "create a command", "create a 
 
 # CQRS Patterns — Commands, Queries, Handlers, DDD
 
-This skill guides implementation of any feature slice in this .NET 9 Modular Monolith.
+This skill guides implementation of any feature slice in this .NET 10 Modular Monolith.
 
 Load `references/cqrs-patterns.md` for the complete guide covering:
 

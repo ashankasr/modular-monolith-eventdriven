@@ -1,6 +1,6 @@
 # Full-Pipeline Feature Implementation — Complete Reference
 
-This document is the master guide for implementing a feature end-to-end in this .NET 9 Modular Monolith.  
+This document is the master guide for implementing a feature end-to-end in this .NET 10 Modular Monolith.  
 Work through the phases in order. Each phase produces artefacts that gate entry into the next phase.
 
 ---
