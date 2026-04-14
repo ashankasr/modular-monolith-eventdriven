@@ -12,6 +12,9 @@
     <ProjectReference Include="..\..\Modules\Notifications\ModularMonolithEventDriven.Modules.Notifications.Presentation\ModularMonolithEventDriven.Modules.Notifications.Presentation.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\ServiceDefaults\ModularMonolithEventDriven.ServiceDefaults\ModularMonolithEventDriven.ServiceDefaults.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />

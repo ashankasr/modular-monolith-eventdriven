@@ -9,6 +9,9 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Aspire service defaults (OTel, health checks, resilience, service discovery)
+builder.AddServiceDefaults();
+
 // Serilog
 builder.Host.UseSerilog((ctx, cfg) =>
 {
@@ -49,6 +52,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseSerilogRequestLogging();
 
+app.MapDefaultEndpoints();
 app.MapEndpoints();
 
 app.Run();
