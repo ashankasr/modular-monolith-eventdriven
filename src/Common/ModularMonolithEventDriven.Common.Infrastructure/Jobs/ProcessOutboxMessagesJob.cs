@@ -26,7 +26,10 @@ public sealed class ProcessOutboxMessagesJob(
 
         foreach (var processor in processors)
         {
+            var module = processor.GetType().GenericTypeArguments.FirstOrDefault()?.Name ?? processor.GetType().Name;
+            logger.LogDebug("Outbox processing [{Module}]", module);
             await processor.ProcessAsync(context.CancellationToken);
+            logger.LogDebug("Outbox finished [{Module}]", module);
         }
 
         logger.LogDebug("Outbox job finished");
