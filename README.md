@@ -1,6 +1,23 @@
-# ModularMonolithEventDriven
+# Modular Monolith — .NET 9 Blueprint
 
-A **.NET 9 Modular Monolith** demonstrating two distributed transaction patterns:
+A **production-grade blueprint** for building **.NET 9 Modular Monolith** applications with event-driven architecture and CQRS.
+
+This repo is a learning reference — every design decision is intentional and documented so you can understand *why*, not just *how*.
+
+---
+
+## What This Demonstrates
+
+| Concern | Approach |
+|---|---|
+| **Module isolation** | Clean Architecture per module — Domain, Application, Infrastructure, Presentation |
+| **Inter-module communication** | Integration events over RabbitMQ (MassTransit) — no direct references between modules |
+| **Distributed transactions** | Two patterns side-by-side: Orchestration (Saga) and Choreography |
+| **CQRS** | Commands and queries via MediatR with FluentValidation pipeline |
+| **Data isolation** | Single SQL Server DB, schema-per-module (`orders`, `inventory`, `payments`, `notifications`) |
+| **Saga persistence** | MassTransit state machine persisted to DB with optimistic concurrency |
+
+### Transaction Patterns
 
 | Pattern | Endpoint | Description |
 |---|---|---|
@@ -24,7 +41,7 @@ A **.NET 9 Modular Monolith** demonstrating two distributed transaction patterns
 
 ```bash
 git clone <repo-url>
-cd ochestrator
+cd <repo-name>
 dotnet restore
 ```
 
@@ -246,7 +263,7 @@ src/
 │   ├── Inventory/
 │   ├── Payments/
 │   └── Notifications/
-│       ├── *.Domain                            # Entities, Value Objects
+│       ├── *.Domain                            # Entities, Value Objects, Domain Events
 │       ├── *.Application                       # Commands, Queries, MediatR handlers
 │       ├── *.Infrastructure                    # DbContext, Repositories, EF Migrations
 │       ├── *.IntegrationEvents                 # RabbitMQ message contracts
@@ -256,6 +273,21 @@ src/
     ├── ModularMonolithEventDriven.Common.Application
     └── ModularMonolithEventDriven.Common.Infrastructure
 ```
+
+---
+
+## Technology Stack
+
+| Concern | Library | Version |
+|---|---|---|
+| Message broker | MassTransit + RabbitMQ | 8.3.6 |
+| Saga persistence | MassTransit.EntityFrameworkCore | 8.3.6 |
+| ORM | Entity Framework Core (SQL Server) | 9.0.3 |
+| CQRS | MediatR | 12.4.1 |
+| Validation | FluentValidation | 11.11.0 |
+| Mapping | Mapster | 7.4.0 |
+| Logging | Serilog.AspNetCore | 8.0.3 |
+| API docs | Scalar.AspNetCore | 2.1.7 |
 
 ---
 
