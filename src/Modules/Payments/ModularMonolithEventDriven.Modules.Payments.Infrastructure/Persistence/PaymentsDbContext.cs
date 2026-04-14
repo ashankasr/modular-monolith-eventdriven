@@ -14,14 +14,6 @@ public sealed class PaymentsDbContext(DbContextOptions<PaymentsDbContext> option
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("payments");
 
-        modelBuilder.Entity<Payment>(b =>
-        {
-            b.ToTable("Payments");
-            b.HasKey(p => p.Id);
-            b.Property(p => p.CustomerId).IsRequired().HasMaxLength(100);
-            b.Property(p => p.Amount).HasPrecision(18, 2);
-            b.Property(p => p.Status).HasConversion<string>();
-            b.HasIndex(p => p.OrderId).IsUnique();
-        });
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(PaymentsDbContext).Assembly);
     }
 }

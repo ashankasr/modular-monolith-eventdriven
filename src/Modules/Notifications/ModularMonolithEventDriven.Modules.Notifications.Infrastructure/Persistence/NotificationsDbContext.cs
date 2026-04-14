@@ -13,13 +13,6 @@ public sealed class NotificationsDbContext(DbContextOptions<NotificationsDbConte
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("notifications");
 
-        modelBuilder.Entity<NotificationLog>(b =>
-        {
-            b.ToTable("NotificationLogs");
-            b.HasKey(n => n.Id);
-            b.Property(n => n.RecipientEmail).IsRequired().HasMaxLength(200);
-            b.Property(n => n.Status).IsRequired().HasMaxLength(50);
-            b.Property(n => n.Message).IsRequired().HasMaxLength(1000);
-        });
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(NotificationsDbContext).Assembly);
     }
 }

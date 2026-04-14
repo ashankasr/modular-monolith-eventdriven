@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ModularMonolithEventDriven.Common.Application.Abstractions;
 using ModularMonolithEventDriven.Common.Domain.Primitives;
 using ModularMonolithEventDriven.Common.Infrastructure.Outbox;
+using ModularMonolithEventDriven.Common.Infrastructure.Persistence.Configurations;
 
 namespace ModularMonolithEventDriven.Common.Infrastructure.Persistence;
 
@@ -21,14 +22,7 @@ public abstract class BaseDbContext(DbContextOptions options) : DbContext(option
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<OutboxMessage>(b =>
-        {
-            b.ToTable("OutboxMessages");
-            b.HasKey(m => m.Id);
-            b.Property(m => m.Type).IsRequired().HasMaxLength(500);
-            b.Property(m => m.Content).IsRequired();
-            b.HasIndex(m => m.ProcessedOnUtc);
-        });
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
     }
 
     private void SetAuditableProperties()

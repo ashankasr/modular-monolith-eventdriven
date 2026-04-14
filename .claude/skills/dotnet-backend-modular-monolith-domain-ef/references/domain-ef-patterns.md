@@ -169,17 +169,38 @@ Events accumulate on `entity.DomainEvents` (from `Entity<TKey>`). Wire up dispat
 
 ---
 
-## 2. EF Entity Configuration in `OnModelCreating`
+## 2. EF Entity Configuration — `IEntityTypeConfiguration<T>`
 
-Configuration lives **inline** inside the module's `DbContext.OnModelCreating` — not in separate `IEntityTypeConfiguration<T>` classes. This keeps all persistence knowledge in one file per module.
+Each entity gets its own configuration class implementing `IEntityTypeConfiguration<T>`, placed in `Infrastructure/Persistence/Configurations/`. The module's `DbContext.OnModelCreating` calls `ApplyConfigurationsFromAssembly` to pick them all up automatically.
+
+```csharp
+// Infrastructure/Persistence/Configurations/ProductConfiguration.cs
+public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
+{
+    public void Configure(EntityTypeBuilder<Product> builder)
+    {
+        builder.ToTable("Products");
+        builder.HasKey(p => p.Id);
+        builder.Property(p => p.Name).IsRequired().HasMaxLength(200);
+        builder.Property(p => p.Sku).IsRequired().HasMaxLength(50);
+        builder.Property(p => p.Price).HasPrecision(18, 2);
+        builder.HasIndex(p => p.Sku).IsUnique();
+    }
+}
+```
+
+**Rules:**
+- One file per entity — `<EntityName>Configuration.cs`
+- `sealed class`, no constructor parameters
+- All configuration goes inside `Configure(EntityTypeBuilder<T> builder)` — never use data annotations on entities
 
 ### String properties
 
 ```csharp
-b.Property(p => p.Name).IsRequired().HasMaxLength(200);
-b.Property(p => p.Sku).IsRequired().HasMaxLength(50);
-b.Property(p => p.FailureReason).HasMaxLength(500);       // nullable — no IsRequired()
-b.Property(p => p.Notes).HasMaxLength(1000);
+builder.Property(p => p.Name).IsRequired().HasMaxLength(200);
+builder.Property(p => p.Sku).IsRequired().HasMaxLength(50);
+builder.Property(p => p.FailureReason).HasMaxLength(500);       // nullable — no IsRequired()
+builder.Property(p => p.Notes).HasMaxLength(1000);
 ```
 
 **Conventions:**
@@ -198,9 +219,9 @@ b.Property(p => p.Notes).HasMaxLength(1000);
 
 Always set precision — SQL Server default is `decimal(18,2)`:
 ```csharp
-b.Property(p => p.Price).HasPrecision(18, 2);
-b.Property(p => p.Amount).HasPrecision(18, 2);
-b.Property(p => p.TotalAmount).HasPrecision(18, 2);
+builder.Property(p => p.Price).HasPrecision(18, 2);
+builder.Property(p => p.Amount).HasPrecision(18, 2);
+builder.Property(p => p.TotalAmount).HasPrecision(18, 2);
 ```
 
 ---
@@ -208,7 +229,7 @@ b.Property(p => p.TotalAmount).HasPrecision(18, 2);
 ### Enum → string conversion
 
 ```csharp
-b.Property(o => o.Status).HasConversion<string>().IsRequired();
+builder.Property(o => o.Status).HasConversion<string>().IsRequired();
 ```
 
 Stores `"Pending"`, `"Completed"` etc. instead of integers. Safe when values are added later.
@@ -218,8 +239,8 @@ Stores `"Pending"`, `"Completed"` etc. instead of integers. Safe when values are
 ### Unique index
 
 ```csharp
-b.HasIndex(p => p.Sku).IsUnique();
-b.HasIndex(p => p.OrderId).IsUnique();   // one payment per order
+builder.HasIndex(p => p.Sku).IsUnique();
+builder.HasIndex(p => p.OrderId).IsUnique();   // one payment per order
 ```
 
 ---
@@ -227,7 +248,7 @@ b.HasIndex(p => p.OrderId).IsUnique();   // one payment per order
 ### Non-unique index
 
 ```csharp
-b.HasIndex(i => i.OrderId);   // foreign key navigation — improves join performance
+builder.HasIndex(i => i.OrderId);   // foreign key navigation — improves join performance
 ```
 
 ---
@@ -236,10 +257,10 @@ b.HasIndex(i => i.OrderId);   // foreign key navigation — improves join perfor
 
 ```csharp
 // On the aggregate root (Order):
-b.HasMany(o => o.Items)
- .WithOne()
- .HasForeignKey(i => i.OrderId)
- .OnDelete(DeleteBehavior.Cascade);
+builder.HasMany(o => o.Items)
+       .WithOne()
+       .HasForeignKey(i => i.OrderId)
+       .OnDelete(DeleteBehavior.Cascade);
 ```
 
 The child entity (`OrderItem`) does **not** need a navigation property back to the root.
@@ -251,20 +272,23 @@ The child entity (`OrderItem`) does **not** need a navigation property back to t
 Use when a value object has no separate lifecycle and is always loaded with its owner.
 
 ```csharp
-// StockReservation owns a collection of ReservationItem records
-modelBuilder.Entity<StockReservation>(b =>
+// Infrastructure/Persistence/Configurations/StockReservationConfiguration.cs
+public sealed class StockReservationConfiguration : IEntityTypeConfiguration<StockReservation>
 {
-    b.ToTable("StockReservations");
-    b.HasKey(r => r.Id);
-    b.Property(r => r.Status).HasConversion<string>();
-    b.OwnsMany(r => r.Items, ib =>
+    public void Configure(EntityTypeBuilder<StockReservation> builder)
     {
-        ib.ToTable("StockReservationItems");
-        ib.WithOwner().HasForeignKey("ReservationId");
-        ib.Property(i => i.ProductId);
-        ib.Property(i => i.Quantity);
-    });
-});
+        builder.ToTable("StockReservations");
+        builder.HasKey(r => r.Id);
+        builder.Property(r => r.Status).HasConversion<string>();
+        builder.OwnsMany(r => r.Items, ib =>
+        {
+            ib.ToTable("StockReservationItems");
+            ib.WithOwner().HasForeignKey("ReservationId");
+            ib.Property(i => i.ProductId);
+            ib.Property(i => i.Quantity);
+        });
+    }
+}
 ```
 
 - `WithOwner().HasForeignKey("ReservationId")` — shadow property FK, not on the record
@@ -275,7 +299,7 @@ modelBuilder.Entity<StockReservation>(b =>
 ### `OwnsOne` (single value object embedded)
 
 ```csharp
-b.OwnsOne(o => o.Address, ab =>
+builder.OwnsOne(o => o.Address, ab =>
 {
     ab.Property(a => a.Street).IsRequired().HasMaxLength(200);
     ab.Property(a => a.City).IsRequired().HasMaxLength(100);
@@ -299,32 +323,11 @@ public sealed class InventoryDbContext(DbContextOptions<InventoryDbContext> opti
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);   // ← must call base (sets audit timestamps)
-        modelBuilder.HasDefaultSchema("inventory");   // ← schema-per-module
+        base.OnModelCreating(modelBuilder);              // ← must call base (registers OutboxMessage)
+        modelBuilder.HasDefaultSchema("inventory");      // ← schema-per-module
 
-        modelBuilder.Entity<Product>(b =>
-        {
-            b.ToTable("Products");
-            b.HasKey(p => p.Id);
-            b.Property(p => p.Name).IsRequired().HasMaxLength(200);
-            b.Property(p => p.Sku).IsRequired().HasMaxLength(50);
-            b.Property(p => p.Price).HasPrecision(18, 2);
-            b.HasIndex(p => p.Sku).IsUnique();
-        });
-
-        modelBuilder.Entity<StockReservation>(b =>
-        {
-            b.ToTable("StockReservations");
-            b.HasKey(r => r.Id);
-            b.Property(r => r.Status).HasConversion<string>();
-            b.OwnsMany(r => r.Items, ib =>
-            {
-                ib.ToTable("StockReservationItems");
-                ib.WithOwner().HasForeignKey("ReservationId");
-                ib.Property(i => i.ProductId);
-                ib.Property(i => i.Quantity);
-            });
-        });
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(InventoryDbContext).Assembly);
+        // ↑ auto-discovers all IEntityTypeConfiguration<T> in this Infrastructure assembly
     }
 }
 ```
@@ -334,7 +337,8 @@ public sealed class InventoryDbContext(DbContextOptions<InventoryDbContext> opti
 - Primary constructor `(DbContextOptions<TContext> options)` — passed straight to base
 - Implements `I<Module>UnitOfWork` (except Notifications, which has no UoW interface)
 - `HasDefaultSchema` — always set; value = lowercase module name
-- `base.OnModelCreating(modelBuilder)` — always call first
+- `base.OnModelCreating(modelBuilder)` — always call first (applies `OutboxMessageConfiguration` from Common.Infrastructure)
+- `ApplyConfigurationsFromAssembly(typeof(<Module>DbContext).Assembly)` — picks up all `IEntityTypeConfiguration<T>` classes in the module's Infrastructure assembly
 - No `DbSet` for child/owned entities — they are reached via the aggregate root
 
 ---
@@ -450,7 +454,7 @@ dotnet ef migrations script \
 | Enum definition | Domain | `Domain/<EntityName>.cs` or `Domain/<EnumName>.cs` |
 | Error definitions | Domain | `Domain/Errors/<Module>Errors.cs` |
 | Repository interface | Domain | `Domain/I<EntityName>Repository.cs` |
-| EF configuration | Infrastructure | `Infrastructure/Persistence/<Module>DbContext.cs` |
+| EF configuration | Infrastructure | `Infrastructure/Persistence/Configurations/<EntityName>Configuration.cs` |
 | Repository implementation | Infrastructure | `Infrastructure/Persistence/<EntityName>Repository.cs` |
 | Design-time factory | Infrastructure | `Infrastructure/Persistence/<Module>DbContextFactory.cs` |
 | Migrations | Infrastructure | `Infrastructure/Persistence/Migrations/` |
@@ -463,9 +467,11 @@ dotnet ef migrations script \
 |---|---|
 | Forgetting `private Entity() { }` | EF requires a parameterless constructor on every mapped entity |
 | `DbSet` for a child entity (e.g. `OrderItem`) | Only aggregate roots get `DbSet`; children are reached via root |
-| Missing `base.OnModelCreating(modelBuilder)` | `BaseDbContext` sets up audit timestamps — always call base first |
+| Missing `base.OnModelCreating(modelBuilder)` | `BaseDbContext` applies `OutboxMessageConfiguration` — always call base first |
+| Putting EF config inline in `OnModelCreating` | Create a dedicated `<EntityName>Configuration : IEntityTypeConfiguration<T>` class |
+| Forgetting to call `ApplyConfigurationsFromAssembly` | Without it, configuration classes are never discovered |
 | Storing enum as integer | Use `.HasConversion<string>()` — integer values break if enum is reordered |
 | Missing `HasPrecision` on `decimal` | EF warns and uses DB default; always set `(18, 2)` explicitly |
 | Migrations history collision across modules | Each factory must set `MigrationsHistoryTable("__EFMigrationsHistory", "<schema>")` |
-| Running `dotnet ef` from wrong directory | Always use `--project` and `--startup-project` pointing to the `Infrastructure` project |
+| Running `dotnet ef` from wrong directory | Always use `--project` and `--startup-project` pointing to the correct projects |
 | Setting properties from outside the entity | All business state changes go through behaviour methods; no public setters |

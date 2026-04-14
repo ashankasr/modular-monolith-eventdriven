@@ -265,12 +265,27 @@ public sealed class {ModuleName}DbContext(DbContextOptions<{ModuleName}DbContext
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasDefaultSchema("{moduleName_lower}");
 
-        modelBuilder.Entity<{EntityName}>(b =>
-        {
-            b.ToTable("{EntityName}s");
-            b.HasKey(x => x.Id);
-            b.Property(x => x.Name).IsRequired().HasMaxLength(200);
-        });
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof({ModuleName}DbContext).Assembly);
+    }
+}
+```
+
+### `Persistence/Configurations/{EntityName}Configuration.cs`
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Ochestrator.Modules.{ModuleName}.Domain;
+
+namespace Ochestrator.Modules.{ModuleName}.Infrastructure.Persistence.Configurations;
+
+public sealed class {EntityName}Configuration : IEntityTypeConfiguration<{EntityName}>
+{
+    public void Configure(EntityTypeBuilder<{EntityName}> builder)
+    {
+        builder.ToTable("{EntityName}s");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Name).IsRequired().HasMaxLength(200);
+        // TODO: add remaining property/index/relationship configuration
     }
 }
 ```

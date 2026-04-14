@@ -265,19 +265,25 @@ public sealed class CreateProductCommandValidator : AbstractValidator<CreateProd
 
 ### 4.3 Infrastructure Layer — Persistence
 
-**EF entity configuration** (add inside `OnModelCreating` of the module's DbContext)
+**EF entity configuration** — create a dedicated `IEntityTypeConfiguration<T>` class in `Infrastructure/Persistence/Configurations/`
 
 ```csharp
-builder.Entity<Product>(b =>
+// Infrastructure/Persistence/Configurations/ProductConfiguration.cs
+public sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
-    b.ToTable("Products", "inventory");
-    b.HasKey(p => p.Id);
-    b.Property(p => p.Name).HasMaxLength(200).IsRequired();
-    b.Property(p => p.Sku).HasMaxLength(50).IsRequired();
-    b.HasIndex(p => p.Sku).IsUnique();
-    b.Property(p => p.Price).HasPrecision(18, 2);
-});
+    public void Configure(EntityTypeBuilder<Product> builder)
+    {
+        builder.ToTable("Products");
+        builder.HasKey(p => p.Id);
+        builder.Property(p => p.Name).HasMaxLength(200).IsRequired();
+        builder.Property(p => p.Sku).HasMaxLength(50).IsRequired();
+        builder.HasIndex(p => p.Sku).IsUnique();
+        builder.Property(p => p.Price).HasPrecision(18, 2);
+    }
+}
 ```
+
+The module's `DbContext.OnModelCreating` already calls `ApplyConfigurationsFromAssembly` — no changes needed there.
 
 **Repository method implementation**
 
@@ -286,12 +292,13 @@ public async Task<Product?> GetBySkuAsync(string sku, CancellationToken cancella
     => await _context.Products.FirstOrDefaultAsync(p => p.Sku == sku, cancellationToken);
 ```
 
-**EF Migration command** (run from the Infrastructure project directory)
+**EF Migration command** (run from the repo root)
 
 ```bash
 dotnet ef migrations add <MigrationName> \
-  --project src/Modules/<Name>/Ochestrator.Modules.<Name>.Infrastructure \
-  --startup-project src/Api/Ochestrator.Api
+  --project src/Modules/<Name>/ModularMonolithEventDriven.Modules.<Name>.Infrastructure/ModularMonolithEventDriven.Modules.<Name>.Infrastructure.csproj \
+  --startup-project src/Api/ModularMonolithEventDriven.Api/ModularMonolithEventDriven.Api.csproj \
+  --context <Name>DbContext
 ```
 
 > Detailed patterns: load `dotnet-backend-modular-monolith-domain-ef` skill references.
@@ -459,7 +466,7 @@ Work through every item before marking the feature done.
 - [ ] Response DTO uses `Adapt<T>()` where mapping is needed
 
 ### Infrastructure — Persistence
-- [ ] EF entity configuration is inside `OnModelCreating` (not via annotations)
+- [ ] EF entity configuration is in a dedicated `<EntityName>Configuration : IEntityTypeConfiguration<T>` class in `Persistence/Configurations/`
 - [ ] New `DbSet<T>` added to the module DbContext
 - [ ] EF migration created (`dotnet ef migrations add ...`)
 - [ ] Migration reviewed — no unintended table/column drops

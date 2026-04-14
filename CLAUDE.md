@@ -79,10 +79,19 @@ Implementation guidance is provided via Claude skills — use them for specific 
 
 | Skill | When to use |
 |---|---|
+| `dotnet-backend-modular-monolith-implement-feature` | Implementing a feature end-to-end across all layers |
 | `dotnet-backend-modular-monolith-cqrs-patterns` | Adding commands, queries, handlers, validation |
-| `dotnet-backend-modular-monolith-domain-ef` | Adding entities, EF config, migrations |
+| `dotnet-backend-modular-monolith-domain-ef` | Adding entities, EF config (`IEntityTypeConfiguration<T>`), migrations |
 | `dotnet-backend-modular-monolith-eventdriven-architecture` | Architecture questions, module boundaries |
 | `dotnet-backend-modular-monolith-eventdriven-create-module` | Scaffolding a new module |
 | `dotnet-backend-modular-monolith-integration-events-consumers` | Adding consumers, integration events |
 | `dotnet-backend-modular-monolith-presentation-endpoints` | Adding HTTP endpoints |
 | `dotnet-backend-modular-monolith-saga` | Extending the OrderSaga, adding saga steps |
+
+
+## Self-Updating Skills Engine
+
+1. When the user corrects you or you make a mistake, update the relevant skill.
+2. When the user adds a new skill, add it into the **## Skills Available** table.
+3. When a project-wide pattern changes, update **all** skills that reference the old pattern — not just the one most directly related.
+4. When a new architectural constraint is established, add it to **## Key Design Decisions**.
