@@ -551,6 +551,27 @@ public sealed class OrderCreatedDomainEventHandler(
 - Do NOT inject `I<Module>UnitOfWork` — the processor already committed; just read and publish
 - The handler is auto-discovered by `AddApplication(assembly)` — no manual registration needed
 
+### OutboxMessageProcessor error handling
+
+In `OutboxMessageProcessor<TDbContext>`, the catch block must **not** set `ProcessedOnUtc` on failure. Only `Error` should be set. Setting `ProcessedOnUtc` in the catch block permanently skips the row on all future poll cycles (the processor filters `m.ProcessedOnUtc == null`), meaning a transient failure (e.g. RabbitMQ publish) silently drops the event with no retry.
+
+```csharp
+// CORRECT — failed messages remain visible for retry
+catch (Exception ex)
+{
+    logger.LogError(ex, "Outbox: failed to process message {Id}", message.Id);
+    message.Error = ex.ToString();
+    // ProcessedOnUtc intentionally NOT set — next poll will retry
+}
+
+// WRONG — permanently skips the message on any failure
+catch (Exception ex)
+{
+    message.Error = ex.ToString();
+    message.ProcessedOnUtc = DateTime.UtcNow;  // ← never do this
+}
+```
+
 ### Domain event definition (no change to existing pattern)
 
 ```csharp

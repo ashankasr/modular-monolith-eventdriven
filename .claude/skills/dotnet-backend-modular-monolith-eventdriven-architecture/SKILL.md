@@ -26,6 +26,7 @@ A **Modular Monolith** is a single deployable unit divided into strongly-bounded
 | **Auto-migrations** | Host calls `Database.MigrateAsync()` on each DbContext at startup |
 | **CQRS via MediatR** | Commands/Queries return `Result<T>`; pipeline behaviors handle logging and validation |
 | **Saga persistence** | Saga state stored in DB with optimistic concurrency (MassTransit.EntityFrameworkCore) |
+| **Transactional Outbox** | Domain events written to `OutboxMessage` rows in the same DB transaction as the aggregate save; a background processor dispatches them via MediatR to `IDomainEventHandler<T>` |
 
 ## Distributed Transaction Patterns
 
@@ -109,6 +110,55 @@ app.MapEndpoints();
 ```
 
 `MapEndpoints()` is defined in `src/Api/*/Extensions/WebApplicationExtensions.cs` (internal to the API host) and calls each module's `Map<Module>Endpoints()` extension. The API host is the only place that knows about all Presentation projects — Common.Infrastructure does not.
+
+## Transactional Outbox Pattern
+
+### The dual-write problem
+
+Calling `publishEndpoint.Publish(...)` directly in a command handler after `SaveChangesAsync()` is a **dual-write**: if the broker publish fails, the DB row exists but no message was sent — the event is silently lost with no retry.
+
+### How the outbox solves it
+
+```
+unitOfWork.SaveChangesAsync()
+  └─ OutboxMessagesInterceptor (EF SaveChanges interceptor)
+       → writes domain events as OutboxMessage rows in the SAME transaction
+         ↓ (background, Quartz job every 30 s)
+OutboxMessageProcessor<TDbContext>
+  → reads rows WHERE ProcessedOnUtc IS NULL
+  → deserialises to IDomainEvent
+  → publisher.Publish(DomainEventNotification<T>)  [MediatR]
+    ↓
+IDomainEventHandler<T>
+  → publishes integration event / MassTransit message to RabbitMQ
+  → marks row ProcessedOnUtc = UtcNow
+```
+
+### Outbox processor error handling — critical rule
+
+The `OutboxMessageProcessor` catch block must **never** set `ProcessedOnUtc` on failure. Only `Error` should be set. Rows with `ProcessedOnUtc == null` are retried on every poll cycle; rows with `ProcessedOnUtc` set are permanently skipped.
+
+```csharp
+// CORRECT — transient failures (e.g. RabbitMQ down) are retried automatically
+catch (Exception ex)
+{
+    logger.LogError(ex, "Outbox: failed to process message {Id}", message.Id);
+    message.Error = ex.ToString();
+    // ProcessedOnUtc intentionally NOT set
+}
+```
+
+### Where to publish integration messages
+
+Do **not** call `publishEndpoint.Publish(...)` directly in command handlers. Instead:
+
+1. The entity raises a domain event in its factory / state-change method (`RaiseDomainEvent(...)`)
+2. The outbox interceptor captures it atomically with the `SaveChangesAsync`
+3. `IDomainEventHandler<T>` receives it (via outbox processor) and publishes the MassTransit message
+
+This separates *persistence* (command handler) from *reaction* (event handler), and the outbox provides the delivery guarantee.
+
+---
 
 ## When to Use This Architecture
 

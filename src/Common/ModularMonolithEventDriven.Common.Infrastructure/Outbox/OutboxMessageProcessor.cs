@@ -61,7 +61,6 @@ public sealed class OutboxMessageProcessor<TDbContext>(
             {
                 logger.LogError(ex, "Outbox: failed to process message {Id}", message.Id);
                 message.Error = ex.ToString();
-                message.ProcessedOnUtc = DateTime.UtcNow;
             }
         }
 

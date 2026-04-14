@@ -239,6 +239,66 @@ POST /api/orders/orchestration
 
 ---
 
+## Transactional Outbox Pattern
+
+### Problem: dual-write
+
+Calling `publishEndpoint.Publish(...)` directly in a command handler after `SaveChangesAsync()` creates a **dual-write**: if the broker publish fails, the DB row is committed but no message was sent. There is no automatic retry — the event is lost silently.
+
+### Solution: outbox interceptor + background processor
+
+```
+entity.RaiseDomainEvent(new SomeDomainEvent(...))
+      ↓
+unitOfWork.SaveChangesAsync()
+      └─ OutboxMessagesInterceptor (EF SaveChangesInterceptor)
+           writes OutboxMessage rows in the SAME DB transaction
+      ↓  (background, Quartz job every 30 s)
+OutboxMessageProcessor<TDbContext>
+      reads WHERE ProcessedOnUtc IS NULL
+      deserialises → IDomainEvent
+      publisher.Publish(DomainEventNotification<T>)  [MediatR]
+      ↓
+IDomainEventHandler<T>.Handle(...)
+      publishes integration message to RabbitMQ
+      marks message.ProcessedOnUtc = UtcNow
+```
+
+### Critical rule — catch block must NOT set ProcessedOnUtc on failure
+
+The processor filters `m.ProcessedOnUtc == null`. Setting `ProcessedOnUtc` in the catch block permanently skips the row on all future poll cycles — failed messages are silently dropped with no retry.
+
+```csharp
+// CORRECT
+catch (Exception ex)
+{
+    logger.LogError(ex, "Outbox: failed to process message {Id}", message.Id);
+    message.Error = ex.ToString();
+    // ProcessedOnUtc intentionally NOT set — next poll retries
+}
+
+// WRONG — drops the message permanently on any transient failure
+catch (Exception ex)
+{
+    message.Error = ex.ToString();
+    message.ProcessedOnUtc = DateTime.UtcNow;  // ← never do this
+}
+```
+
+### Where integration messages should be published
+
+Move RabbitMQ/MassTransit publishes **out of command handlers** and **into domain event handlers**:
+
+| Layer | Responsibility |
+|---|---|
+| Command handler | Create aggregate, call `SaveChangesAsync` — nothing else |
+| Domain entity | `RaiseDomainEvent(new XyzDomainEvent(...))` on meaningful state change |
+| `IDomainEventHandler<T>` | Re-fetch aggregate if needed, assemble and publish integration message |
+
+This separates persistence from reaction, and the outbox provides the at-least-once delivery guarantee. The handler is allowed to load the full aggregate from the repository because by the time it runs, the transaction is already committed.
+
+---
+
 ## When to Choose Modular Monolith
 
 **Choose it when:**
