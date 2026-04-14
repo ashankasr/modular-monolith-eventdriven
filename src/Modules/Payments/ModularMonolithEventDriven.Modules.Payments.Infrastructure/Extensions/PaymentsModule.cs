@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ModularMonolithEventDriven.Common.Application.Extensions;
+using ModularMonolithEventDriven.Common.Infrastructure.Outbox;
 using ModularMonolithEventDriven.Modules.Payments.Application.Abstractions;
 using ModularMonolithEventDriven.Modules.Payments.Domain;
 using ModularMonolithEventDriven.Modules.Payments.Infrastructure.Consumers;
@@ -16,11 +17,15 @@ public static class PaymentsModule
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<PaymentsDbContext>(opts =>
-            opts.UseSqlServer(configuration.GetConnectionString("ModularMonolithEventDrivenDb")));
+        services.AddDbContext<PaymentsDbContext>((sp, opts) =>
+        {
+            opts.UseSqlServer(configuration.GetConnectionString("ModularMonolithEventDrivenDb"));
+            opts.AddInterceptors(sp.GetRequiredService<OutboxMessagesInterceptor>());
+        });
 
         services.AddScoped<IPaymentsUnitOfWork>(sp => sp.GetRequiredService<PaymentsDbContext>());
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IOutboxMessageProcessor, OutboxMessageProcessor<PaymentsDbContext>>();
 
         services.AddApplication(
             typeof(Application.AssemblyReference).Assembly);
