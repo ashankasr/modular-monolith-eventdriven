@@ -161,6 +161,6 @@ public sealed class OrderSaga : MassTransitStateMachine<OrderSagaState>
                 }))
                 .Finalize());
 
-        //// SetCompletedWhenFinalized();
+        SetCompletedWhenFinalized();
     }
 }
