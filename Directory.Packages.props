@@ -5,33 +5,33 @@
   <ItemGroup>
     <!-- MediatR -->
     <PackageVersion Include="MediatR" Version="12.4.1" />
-    <PackageVersion Include="FluentValidation" Version="11.11.0" />
-    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
+    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <!-- MassTransit -->
-    <PackageVersion Include="MassTransit" Version="8.3.6" />
-    <PackageVersion Include="MassTransit.RabbitMQ" Version="8.3.6" />
-    <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="8.3.6" />
+    <PackageVersion Include="MassTransit" Version="9.1.0" />
+    <PackageVersion Include="MassTransit.RabbitMQ" Version="9.1.0" />
+    <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="9.1.0" />
     <!-- EF Core -->
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.3" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.3" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
     <!-- Mapping -->
-    <PackageVersion Include="Mapster" Version="7.4.0" />
-    <PackageVersion Include="Mapster.DependencyInjection" Version="1.0.1" />
+    <PackageVersion Include="Mapster" Version="10.0.7" />
+    <PackageVersion Include="Mapster.DependencyInjection" Version="10.0.7" />
     <!-- Logging -->
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
-    <PackageVersion Include="Serilog.AspNetCore" Version="8.0.3" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <!-- Configuration -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.3" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
     <!-- Quartz (Outbox job scheduler) -->
-    <PackageVersion Include="Quartz" Version="3.13.1" />
-    <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.13.1" />
+    <PackageVersion Include="Quartz" Version="3.18.0" />
+    <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.18.0" />
     <!-- ASP.NET Core -->
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.1.7" />
   </ItemGroup>
 </Project>
