@@ -11,8 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Serilog
 builder.Host.UseSerilog((ctx, cfg) =>
+{
     cfg.ReadFrom.Configuration(ctx.Configuration)
-       .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"));
+        .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+});
 
 // Module registrations
 builder.Services.AddOrdersModule(builder.Configuration);
