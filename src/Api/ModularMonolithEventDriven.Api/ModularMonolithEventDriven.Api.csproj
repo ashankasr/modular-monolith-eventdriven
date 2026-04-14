@@ -15,8 +15,6 @@
     <ProjectReference Include="..\..\ServiceDefaults\ModularMonolithEventDriven.ServiceDefaults\ModularMonolithEventDriven.ServiceDefaults.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Serilog.AspNetCore" />
-    <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Scalar.AspNetCore" />
     <PackageReference Include="MassTransit.RabbitMQ" />

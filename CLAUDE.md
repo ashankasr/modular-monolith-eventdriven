@@ -56,7 +56,7 @@ These are architectural constraints — apply them consistently when adding or m
 | CQRS | MediatR | 12.4.1 |
 | Validation | FluentValidation | 12.1.1 |
 | Mapping | Mapster | 10.0.7 |
-| Logging | Serilog.AspNetCore | 10.0.0 |
+| Logging | Microsoft.Extensions.Logging + OpenTelemetry | 10.0.0 / 1.12.0 |
 | API docs | Scalar.AspNetCore | 2.1.7 |
 
 NuGet versions are centrally managed in `Directory.Packages.props`.

@@ -5,19 +5,11 @@ using ModularMonolithEventDriven.Modules.Notifications.Infrastructure.Extensions
 using ModularMonolithEventDriven.Modules.Orders.Infrastructure.Extensions;
 using ModularMonolithEventDriven.Modules.Payments.Infrastructure.Extensions;
 using Scalar.AspNetCore;
-using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Aspire service defaults (OTel, health checks, resilience, service discovery)
 builder.AddServiceDefaults();
-
-// Serilog
-builder.Host.UseSerilog((ctx, cfg) =>
-{
-    cfg.ReadFrom.Configuration(ctx.Configuration)
-        .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
-});
 
 // Module registrations
 builder.Services.AddOrdersModule(builder.Configuration);
@@ -49,8 +41,6 @@ if (app.Environment.IsDevelopment())
         options.Theme = ScalarTheme.Purple;
     });
 }
-
-app.UseSerilogRequestLogging();
 
 app.MapDefaultEndpoints();
 app.MapEndpoints();

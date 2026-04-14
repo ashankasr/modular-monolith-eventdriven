@@ -234,7 +234,7 @@ POST /api/orders/orchestration
 | CQRS | MediatR 12 | Clean separation; pipeline behaviors for cross-cutting concerns |
 | Validation | FluentValidation | MediatR pipeline behavior wires it automatically per command |
 | Mapping | Mapster | Faster than AutoMapper; minimal API friendly |
-| Logging | Serilog | Structured logging; console sink configured via `appsettings.json` |
+| Logging | Microsoft.Extensions.Logging + OpenTelemetry | Built-in .NET logging; OTel exporter wired in `AddServiceDefaults()`; log levels via `appsettings.json` |
 | API Docs | Scalar | Better DX than Swagger UI; themed OpenAPI reference |
 
 ---

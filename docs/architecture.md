@@ -23,7 +23,7 @@ This is a **.NET 9 Modular Monolith** that demonstrates two distributed transact
 | CQRS | MediatR | 12.4.1 |
 | Validation | FluentValidation | 11.11.0 |
 | Mapping | Mapster | 7.4.0 |
-| Logging | Serilog.AspNetCore | 8.0.3 |
+| Logging | Microsoft.Extensions.Logging + OpenTelemetry | 10.0.0 / 1.12.0 |
 | API docs | Scalar.AspNetCore | 2.1.7 |
 
 NuGet versions are centrally managed in `Directory.Packages.props`.
@@ -811,7 +811,7 @@ Add this class to every new Application project you create.
 
 Full wiring order in `src/Api/ModularMonolithEventDriven.Api/Program.cs`:
 
-1. Serilog configured from `appsettings.json`
+1. `Microsoft.Extensions.Logging` configured from `appsettings.json`; OTel log exporter wired via `AddServiceDefaults()`
 2. All 4 module `Add{Module}Module()` extensions called
 3. MassTransit configured with:
    - All choreography consumers registered
