@@ -35,8 +35,8 @@ Content-Type: application/json
   "items": [
     {
       "productId": "92870439-404E-4466-AFDE-1DB8936CD87D",
-      "productName": "Widget Pro",
-      "quantity": 100,
+      "productName": "iPhone 17",
+      "quantity": 4,
       "unitPrice": 29.99
     }
   ]
