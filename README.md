@@ -280,8 +280,8 @@ src/
 
 | Concern | Library | Version |
 |---|---|---|
-| Message broker | MassTransit + RabbitMQ | 9.1.0 |
-| Saga persistence | MassTransit.EntityFrameworkCore | 9.1.0 |
+| Message broker | MassTransit + RabbitMQ | 8.3.6 |
+| Saga persistence | MassTransit.EntityFrameworkCore | 8.3.6 |
 | ORM | Entity Framework Core (SQL Server) | 10.0.0 |
 | CQRS | MediatR | 12.4.1 |
 | Validation | FluentValidation | 12.1.1 |

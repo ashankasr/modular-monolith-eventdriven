@@ -42,7 +42,7 @@ These are architectural constraints — apply them consistently when adding or m
 - **Saga state in DB**: `orders.OrderSagaState` via `MassTransit.EntityFrameworkCore` with optimistic concurrency.
 - **CQRS via MediatR**: Commands and queries live in the Application layer. Each module self-registers via `AddApplication(assembly)`.
 - **Auto-migrations on startup**: `Program.cs` calls `Database.MigrateAsync()` on all 4 DbContexts.
-- **MassTransit retry**: 3 attempts at 100ms → 500ms → 1s intervals.
+- **MassTransit retry**: Exponential, 5 attempts, 1s → 5min interval, 5s increment.
 
 ---
 
@@ -50,8 +50,8 @@ These are architectural constraints — apply them consistently when adding or m
 
 | Concern | Library | Version |
 |---|---|---|
-| Message broker | MassTransit + RabbitMQ | 9.1.0 |
-| Saga persistence | MassTransit.EntityFrameworkCore | 9.1.0 |
+| Message broker | MassTransit + RabbitMQ | 8.3.6 |
+| Saga persistence | MassTransit.EntityFrameworkCore | 8.3.6 |
 | ORM | Entity Framework Core (SQL Server) | 10.0.0 |
 | CQRS | MediatR | 12.4.1 |
 | Validation | FluentValidation | 12.1.1 |

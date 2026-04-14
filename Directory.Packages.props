@@ -7,10 +7,10 @@
     <PackageVersion Include="MediatR" Version="12.4.1" />
     <PackageVersion Include="FluentValidation" Version="12.1.1" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-    <!-- MassTransit -->
-    <PackageVersion Include="MassTransit" Version="9.1.0" />
-    <PackageVersion Include="MassTransit.RabbitMQ" Version="9.1.0" />
-    <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="9.1.0" />
+    <!-- MassTransit (8.x = MIT licensed, no commercial license required) -->
+    <PackageVersion Include="MassTransit" Version="8.3.6" />
+    <PackageVersion Include="MassTransit.RabbitMQ" Version="8.3.6" />
+    <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="8.3.6" />
     <!-- EF Core -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
