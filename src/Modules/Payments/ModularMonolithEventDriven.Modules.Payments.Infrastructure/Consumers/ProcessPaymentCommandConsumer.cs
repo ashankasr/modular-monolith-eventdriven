@@ -29,11 +29,17 @@ public sealed class ProcessPaymentCommandConsumer(
         }
 
         var paymentId = Guid.NewGuid();
-        var payment = Payment.Create(paymentId, msg.OrderId, msg.CustomerId, msg.Amount);
-        paymentRepository.Add(payment);
+        var paymentResult = Payment.Create(paymentId, msg.OrderId, msg.CustomerId, msg.Amount);
+        if (paymentResult.IsFailure)
+        {
+            logger.LogError("[ORCHESTRATION] Failed to create payment for Order {OrderId}. {Reason}", msg.OrderId, paymentResult.Error.Description);
+            await context.Publish(new PaymentFailedEvent(msg.CorrelationId, msg.OrderId, paymentResult.Error.Description, DateTime.UtcNow));
+            return;
+        }
+        paymentRepository.Add(paymentResult.Value);
         await dbContext.SaveChangesAsync(context.CancellationToken);
 
-        logger.LogInformation("[ORCHESTRATION] Payment processed for Order {OrderId}. PaymentId: {PaymentId}", msg.OrderId, paymentId);
-        await context.Publish(new PaymentProcessedEvent(msg.CorrelationId, msg.OrderId, paymentId, msg.Amount, DateTime.UtcNow));
+        logger.LogInformation("[ORCHESTRATION] Payment processed for Order {OrderId}. PaymentId: {PaymentId}", msg.OrderId, paymentResult.Value.Id);
+        await context.Publish(new PaymentProcessedEvent(msg.CorrelationId, msg.OrderId, paymentResult.Value.Id, msg.Amount, DateTime.UtcNow));
     }
 }

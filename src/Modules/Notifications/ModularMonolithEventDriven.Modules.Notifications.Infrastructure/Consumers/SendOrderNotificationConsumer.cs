@@ -16,14 +16,20 @@ public sealed class SendOrderNotificationConsumer(
         var msg = context.Message;
         logger.LogInformation("[ORCHESTRATION] Notifications received SendOrderNotificationCommand for Order {OrderId}. Status: {Status}", msg.OrderId, msg.Status);
 
-        var log = new NotificationLog(
+        var logResult = NotificationLog.Create(
             Guid.NewGuid(),
             msg.OrderId,
             msg.CustomerEmail,
             msg.Status,
             $"[ORCHESTRATION] {msg.Message}");
 
-        dbContext.NotificationLogs.Add(log);
+        if (logResult.IsFailure)
+        {
+            logger.LogError("[ORCHESTRATION] Failed to create notification log for Order {OrderId}. {Reason}", msg.OrderId, logResult.Error.Description);
+            return;
+        }
+
+        dbContext.NotificationLogs.Add(logResult.Value);
         await dbContext.SaveChangesAsync(context.CancellationToken);
 
         logger.LogInformation("[ORCHESTRATION] ✓ Notification sent for Order {OrderId}. Status: {Status}", msg.OrderId, msg.Status);

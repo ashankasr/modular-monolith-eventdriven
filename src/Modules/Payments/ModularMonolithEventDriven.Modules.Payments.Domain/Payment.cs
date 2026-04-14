@@ -1,4 +1,6 @@
 ﻿using ModularMonolithEventDriven.Common.Domain.Primitives;
+using ModularMonolithEventDriven.Common.Domain.Results;
+using ModularMonolithEventDriven.Modules.Payments.Domain.Errors;
 
 namespace ModularMonolithEventDriven.Modules.Payments.Domain;
 
@@ -19,8 +21,19 @@ public sealed class Payment : AuditableGuidEntity
     public decimal Amount { get; private set; }
     public PaymentStatus Status { get; private set; }
 
-    public static Payment Create(Guid id, Guid orderId, string customerId, decimal amount) =>
-        new(id, orderId, customerId, amount);
+    public static Result<Payment> Create(Guid id, Guid orderId, string customerId, decimal amount)
+    {
+        if (orderId == Guid.Empty)
+            return Result.Failure<Payment>(PaymentErrors.InvalidOrderId);
+
+        if (string.IsNullOrWhiteSpace(customerId))
+            return Result.Failure<Payment>(PaymentErrors.InvalidCustomerId);
+
+        if (amount <= 0)
+            return Result.Failure<Payment>(PaymentErrors.InvalidAmount);
+
+        return new Payment(id, orderId, customerId, amount);
+    }
 
     public void Refund() => Status = PaymentStatus.Refunded;
 }

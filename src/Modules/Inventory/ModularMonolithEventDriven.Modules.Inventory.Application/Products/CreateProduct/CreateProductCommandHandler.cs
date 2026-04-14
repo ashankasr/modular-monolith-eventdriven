@@ -11,9 +11,12 @@ public sealed class CreateProductCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
-        var product = Product.Create(Guid.NewGuid(), command.Name, command.Sku, command.StockQuantity, command.Price);
-        productRepository.Add(product);
+        var result = Product.Create(Guid.NewGuid(), command.Name, command.Sku, command.StockQuantity, command.Price);
+        if (result.IsFailure)
+            return Result.Failure<Guid>(result.Error);
+
+        productRepository.Add(result.Value);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return product.Id;
+        return result.Value.Id;
     }
 }

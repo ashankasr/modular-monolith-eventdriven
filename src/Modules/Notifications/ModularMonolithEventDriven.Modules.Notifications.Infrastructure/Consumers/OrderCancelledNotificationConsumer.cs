@@ -16,14 +16,20 @@ public sealed class OrderCancelledNotificationConsumer(
         var msg = context.Message;
         logger.LogInformation("[CHOREOGRAPHY] Notifications received OrderCancelledEvent for Order {OrderId}", msg.OrderId);
 
-        var log = new NotificationLog(
+        var logResult = NotificationLog.Create(
             Guid.NewGuid(),
             msg.OrderId,
             "customer@example.com",
             "Cancelled",
             $"[CHOREOGRAPHY] Your order {msg.OrderId} has been cancelled. Reason: {msg.Reason}");
 
-        dbContext.NotificationLogs.Add(log);
+        if (logResult.IsFailure)
+        {
+            logger.LogError("[CHOREOGRAPHY] Failed to create notification log for Order {OrderId}. {Reason}", msg.OrderId, logResult.Error.Description);
+            return;
+        }
+
+        dbContext.NotificationLogs.Add(logResult.Value);
         await dbContext.SaveChangesAsync(context.CancellationToken);
 
         logger.LogInformation("[CHOREOGRAPHY] ✓ Cancellation notification sent for Order {OrderId}", msg.OrderId);
