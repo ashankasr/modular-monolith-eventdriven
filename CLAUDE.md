@@ -1,21 +1,16 @@
 # Ochestrator — Claude Code Guide
 
-## What This Project Is
+## Purpose
 
-A **.NET 9 Modular Monolith** demonstrating two distributed transaction patterns side-by-side:
+This project is a **blueprint** for building production-grade **.NET 9 Modular Monolith** applications with event-driven architecture. It demonstrates two distributed transaction patterns side-by-side so developers can learn when and how to apply each:
 
-| Pattern | Trigger | How it works |
-|---|---|---|
-| **Orchestration** | `POST /api/orders` | `OrderSaga` state machine coordinates every step with compensation |
-| **Choreography** | `POST /api/orders/{orderId}/cancel` | Modules react to `OrderCancelledEvent` autonomously (no central coordinator) |
+Treat every design decision here as an intentional teaching example, not just implementation code.
 
 ---
 
 ## Architecture
 
 ### Clean Architecture + DDD — per module
-
-Each of the 4 modules follows this layer structure:
 
 ```
 Ochestrator.Modules.<Name>.Domain          → Entities, Value Objects, Domain Events
@@ -27,7 +22,7 @@ Ochestrator.Modules.<Name>.Presentation    → Minimal API endpoint mappings
 
 **Modules:** Orders · Inventory · Payments · Notifications
 
-### Common (shared across all modules)
+### Common (shared kernel)
 
 ```
 Ochestrator.Common.Domain          → Base entities, Result<T>/Error primitives
@@ -35,21 +30,18 @@ Ochestrator.Common.Application     → MediatR pipeline behaviors, AddApplicatio
 Ochestrator.Common.Infrastructure  → BaseDbContext (audit fields, IUnitOfWork base)
 ```
 
-### API Host
-
-```
-src/Api/Ochestrator.Api/Program.cs  → Module wiring, MassTransit config, auto-migrations, endpoint mapping
-```
-
 ---
 
 ## Key Design Decisions
 
-- **Module-specific IUnitOfWork**: `IOrdersUnitOfWork`, `IInventoryUnitOfWork`, `IPaymentsUnitOfWork` registered separately to avoid DI conflicts. Notifications has no UoW interface.
-- **Single SQL Server DB, schema-per-module**: `orders`, `inventory`, `payments`, `notifications` schemas.
-- **Saga state** persisted in `orders.OrderSagaState` via `MassTransit.EntityFrameworkCore` with optimistic concurrency.
+These are architectural constraints — apply them consistently when adding or modifying code:
+
+- **Module-specific IUnitOfWork**: `IOrdersUnitOfWork`, `IInventoryUnitOfWork`, `IPaymentsUnitOfWork` are registered separately to avoid DI conflicts. Notifications has no UoW.
+- **Schema-per-module**: Single SQL Server DB with `orders`, `inventory`, `payments`, `notifications` schemas — modules own their data.
+- **No cross-module direct calls**: Modules communicate only via integration events over RabbitMQ (MassTransit). No shared DbContext, no direct service references across modules.
+- **Saga state in DB**: `orders.OrderSagaState` via `MassTransit.EntityFrameworkCore` with optimistic concurrency.
+- **CQRS via MediatR**: Commands and queries live in the Application layer. Each module self-registers via `AddApplication(assembly)`.
 - **Auto-migrations on startup**: `Program.cs` calls `Database.MigrateAsync()` on all 4 DbContexts.
-- **CQRS via MediatR**: Commands/Queries in Application layer; each module registers its own handlers via `AddApplication(assembly)`.
 - **MassTransit retry**: 3 attempts at 100ms → 500ms → 1s intervals.
 
 ---
@@ -73,110 +65,24 @@ NuGet versions are centrally managed in `Directory.Packages.props`.
 
 ## Infrastructure
 
-Only **RabbitMQ** runs in Docker. SQL Server is the local instance.
+Only **RabbitMQ** runs in Docker. SQL Server runs locally.
 
 ```bash
-# Start RabbitMQ only
-docker-compose up -d
-
-# RabbitMQ Management UI
-http://localhost:15672  (guest / guest)
-```
-
-**Connection string** (`appsettings.json`):
-```
-Server=localhost;Integrated Security=false;User ID=sa;Password=password;TrustServerCertificate=true;Initial Catalog=OchestratorDb
+docker-compose up -d   # starts RabbitMQ (5672 / management UI 15672)
 ```
 
 ---
 
-## Running the App
+## Skills Available
 
-```bash
-# 1. Start RabbitMQ
-docker-compose up -d
+Implementation guidance is provided via Claude skills — use them for specific tasks:
 
-# 2. Run the API (auto-applies all EF migrations on startup)
-dotnet run --project src/Api/Ochestrator.Api
-
-# Scalar API UI available at: http://localhost:<PORT>/scalar/v1
-```
-
----
-
-## API Endpoints
-
-### Inventory (seed first)
-```
-POST /api/inventory/products       → Create a product with stock
-GET  /api/inventory/products       → List products
-```
-
-### Orders
-```
-POST /api/orders                   → Place order (Orchestration/Saga pattern)
-POST /api/orders/{orderId}/cancel  → Cancel order (Choreography pattern — publishes OrderCancelledEvent)
-GET  /api/orders/{orderId}         → Get order status
-```
-
-### Payments / Notifications
-```
-GET /api/payments
-GET /api/notifications
-```
-
----
-
-## EF Migrations
-
-Migrations live inside each module's `Infrastructure` project. To add a new migration:
-
-```bash
-dotnet ef migrations add <Name> \
-  --project src/Modules/<Module>/Ochestrator.Modules.<Module>.Infrastructure \
-  --startup-project src/Modules/<Module>/Ochestrator.Modules.<Module>.Infrastructure \
-  --context <Module>DbContext
-
-# Apply manually (app also does this on startup)
-dotnet ef database update \
-  --project src/Modules/<Module>/Ochestrator.Modules.<Module>.Infrastructure \
-  --startup-project src/Modules/<Module>/Ochestrator.Modules.<Module>.Infrastructure \
-  --context <Module>DbContext
-```
-
----
-
-## Key Files
-
-| File | Purpose |
+| Skill | When to use |
 |---|---|
-| [Program.cs](src/Api/Ochestrator.Api/Program.cs) | Module wiring, MassTransit, auto-migrations |
-| [OrderSaga.cs](src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Application/Saga/OrderSaga.cs) | Orchestration state machine |
-| [OrdersEndpoints.cs](src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Presentation/OrdersEndpoints.cs) | HTTP endpoints |
-| [docker-compose.yml](docker-compose.yml) | RabbitMQ container |
-| [Directory.Packages.props](Directory.Packages.props) | Centralized NuGet versions |
-| [appsettings.json](src/Api/Ochestrator.Api/appsettings.json) | Connection strings, RabbitMQ, logging |
-
----
-
-## Saga Flow (Orchestration)
-
-```
-POST /api/orders
-  → PlaceOrderCommand → Order persisted, publishes OrderSagaStartMessage
-    → [Saga] ReserveStockCommand → Inventory
-      ↳ StockWasReserved → [Saga] ProcessPaymentCommand → Payments
-          ↳ PaymentWasProcessed → [Saga] SendOrderNotificationCommand → Notifications → ✅ Done
-          ↳ PaymentFailed → [Saga] ReleaseStockCommand (compensation) + Notification → ❌ Failed
-      ↳ StockReservationFailed → [Saga] SendOrderNotificationCommand → ❌ Failed
-```
-
-## Choreography Flow
-
-```
-POST /api/orders/{orderId}/cancel
-  → CancelOrderCommand → publishes OrderCancelledEvent
-    → Inventory consumer: releases reserved stock (reacts independently)
-    → Payments consumer: issues refund (reacts independently)
-    → Notifications consumer: sends cancellation confirmation (reacts independently)
-```
+| `dotnet-backend-modular-monolith-cqrs-patterns` | Adding commands, queries, handlers, validation |
+| `dotnet-backend-modular-monolith-domain-ef` | Adding entities, EF config, migrations |
+| `dotnet-backend-modular-monolith-eventdriven-architecture` | Architecture questions, module boundaries |
+| `dotnet-backend-modular-monolith-eventdriven-create-module` | Scaffolding a new module |
+| `dotnet-backend-modular-monolith-integration-events-consumers` | Adding consumers, integration events |
+| `dotnet-backend-modular-monolith-presentation-endpoints` | Adding HTTP endpoints |
+| `dotnet-backend-modular-monolith-saga` | Extending the OrderSaga, adding saga steps |
