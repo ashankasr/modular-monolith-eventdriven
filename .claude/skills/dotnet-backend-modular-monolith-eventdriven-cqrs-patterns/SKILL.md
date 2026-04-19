@@ -1,5 +1,5 @@
 ---
-name: dotnet-backend-modular-monolith-cqrs-patterns
+name: dotnet-backend-modular-monolith-eventdriven-cqrs-patterns
 description: Use this skill when the user asks to "create a command", "create a query", "create a handler", "add a use case", "implement a feature", "add validation", "add a domain event", "add repository methods", "map with Mapster", or asks how CQRS patterns work in this codebase.
 ---
 

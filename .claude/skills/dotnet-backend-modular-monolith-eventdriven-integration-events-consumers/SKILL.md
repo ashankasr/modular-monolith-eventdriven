@@ -1,5 +1,5 @@
 ---
-name: dotnet-backend-modular-monolith-integration-events-consumers
+name: dotnet-backend-modular-monolith-eventdriven-integration-events-consumers
 description: Use this skill when the user asks to "add a consumer", "add an integration event", "subscribe to an event", "handle a message", "add a MassTransit consumer", "wire up a consumer", "how do modules communicate", or asks how integration events and consumers work in this codebase.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: dotnet-backend-modular-monolith-implement-feature
+name: dotnet-backend-modular-monolith-eventdriven-implement-feature
 description: Use this skill when the user asks to "implement a feature end-to-end", "build a full pipeline", "add a new endpoint with everything wired up", "implement X from API to domain", "scaffold the full stack for X", or when a request clearly requires touching multiple layers (Presentation → Application → Domain → Infrastructure → Integration Events). This skill orchestrates the other specialist skills in the correct order.
 ---
 

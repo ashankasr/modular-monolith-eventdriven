@@ -79,14 +79,14 @@ Implementation guidance is provided via Claude skills — use them for specific 
 
 | Skill | When to use |
 |---|---|
-| `dotnet-backend-modular-monolith-implement-feature` | Implementing a feature end-to-end across all layers |
-| `dotnet-backend-modular-monolith-cqrs-patterns` | Adding commands, queries, handlers, validation |
+| `dotnet-backend-modular-monolith-eventdriven-implement-feature` | Implementing a feature end-to-end across all layers |
+| `dotnet-backend-modular-monolith-eventdriven-cqrs-patterns` | Adding commands, queries, handlers, validation |
 | `dotnet-backend-modular-monolith-domain-ef` | Adding entities, EF config (`IEntityTypeConfiguration<T>`), migrations |
 | `dotnet-backend-modular-monolith-eventdriven-architecture` | Architecture questions, module boundaries |
 | `dotnet-backend-modular-monolith-eventdriven-create-module` | Scaffolding a new module |
-| `dotnet-backend-modular-monolith-integration-events-consumers` | Adding consumers, integration events |
+| `dotnet-backend-modular-monolith-eventdriven-integration-events-consumers` | Adding consumers, integration events |
 | `dotnet-backend-modular-monolith-presentation-endpoints` | Adding HTTP endpoints |
-| `dotnet-backend-modular-monolith-saga` | Extending the OrderSaga, adding saga steps |
+| `dotnet-backend-modular-monolith-eventdriven-saga` | Extending the OrderSaga, adding saga steps |
 
 
 ## Self-Updating Skills Engine

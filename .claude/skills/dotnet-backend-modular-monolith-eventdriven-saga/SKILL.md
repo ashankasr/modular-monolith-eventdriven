@@ -1,5 +1,5 @@
 ---
-name: dotnet-backend-modular-monolith-saga
+name: dotnet-backend-modular-monolith-eventdriven-saga
 description: Use this skill when the user asks to "add a saga step", "extend the saga", "add a new state", "add compensation", "add a saga transition", "how does the saga work", "add a new saga event", "modify the OrderSaga", or asks how the MassTransit state machine orchestration pattern works in this codebase.
 ---
 
