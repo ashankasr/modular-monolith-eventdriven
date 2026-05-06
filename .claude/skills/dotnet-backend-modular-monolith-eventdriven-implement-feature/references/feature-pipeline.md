@@ -310,7 +310,7 @@ dotnet ef migrations add <MigrationName> \
 **Event contract** (in the owning module's `IntegrationEvents` project)
 
 ```csharp
-// Modules/<Name>/Ochestrator.Modules.<Name>.IntegrationEvents/
+// Modules/<Name>/ModularMonolithEventDriven.Modules.<Name>.IntegrationEvents/
 public sealed record ProductCreatedIntegrationEvent(
     Guid ProductId,
     string Name,
@@ -342,18 +342,36 @@ public sealed record StockReservationFailedEvent(Guid CorrelationId, Guid OrderI
 
 **IDomainEventHandler — outbox to broker bridge**
 
+Two injection options — both are used in this codebase:
+- `IBus bus` (MassTransit direct) — for simple choreography events
+- `IEventBus eventBus` (abstraction from `Common.Application.Abstractions`) — for saga start messages or when you want to keep MassTransit out of the Application layer
+
 ```csharp
-// Infrastructure/DomainEventHandlers/ProductCreatedDomainEventHandler.cs
-internal sealed class ProductCreatedDomainEventHandler(IPublishEndpoint publishEndpoint)
+// Application/<Feature>/<Action>/ProductCreatedDomainEventHandler.cs
+// Option A: IBus (simple choreography)
+public sealed class ProductCreatedDomainEventHandler(IBus bus)
     : IDomainEventHandler<ProductCreatedDomainEvent>
 {
     public async Task Handle(DomainEventNotification<ProductCreatedDomainEvent> notification,
         CancellationToken cancellationToken)
     {
         var domainEvent = notification.DomainEvent;
-        await publishEndpoint.Publish(
+        await bus.Publish(
             new ProductCreatedIntegrationEvent(domainEvent.ProductId, domainEvent.Name, domainEvent.Sku, DateTime.UtcNow),
             cancellationToken);
+    }
+}
+
+// Option B: IEventBus (abstraction — used for saga start messages)
+public sealed class OrderCreatedDomainEventHandler(IOrderRepository orderRepository, IEventBus eventBus)
+    : IDomainEventHandler<OrderCreatedDomainEvent>
+{
+    public async Task Handle(DomainEventNotification<OrderCreatedDomainEvent> notification,
+        CancellationToken cancellationToken)
+    {
+        var order = await orderRepository.GetByIdAsync(notification.DomainEvent.OrderId, cancellationToken);
+        if (order is null) return;
+        await eventBus.PublishAsync(new OrderSagaStartMessage(...), cancellationToken);
     }
 }
 ```

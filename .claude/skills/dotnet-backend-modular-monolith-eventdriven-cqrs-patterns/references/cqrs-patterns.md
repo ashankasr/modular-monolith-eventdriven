@@ -509,8 +509,8 @@ After wiring, add a migration to create `<schema>.OutboxMessages`:
 
 ```bash
 dotnet ef migrations add AddOutboxMessages \
-  --project src/Modules/<Module>/Ochestrator.Modules.<Module>.Infrastructure \
-  --startup-project src/Modules/<Module>/Ochestrator.Modules.<Module>.Infrastructure \
+  --project src/Modules/<Module>/ModularMonolithEventDriven.Modules.<Module>.Infrastructure/ModularMonolithEventDriven.Modules.<Module>.Infrastructure.csproj \
+  --startup-project src/Api/ModularMonolithEventDriven.Api/ModularMonolithEventDriven.Api.csproj \
   --context <Module>DbContext
 ```
 

@@ -11,7 +11,8 @@
       "Edit(/.claude/skills/dotnet-backend-modular-monolith-saga/**)",
       "Bash(grep -l \"OutboxMessages\" c:/Projects/dotnet/ochestrator/src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Infrastructure/Persistence/Migrations/*.cs)",
       "Bash(grep -l \"OutboxMessages\" c:/Projects/dotnet/ochestrator/src/Modules/Inventory/ModularMonolithEventDriven.Modules.Inventory.Infrastructure/Persistence/Migrations/*.cs)",
-      "Bash(dotnet restore *)"
+      "Bash(dotnet restore *)",
+      "Bash(grep -r \"^namespace\" /Users/ashanka/Projects/modular-monolith-eventdriven/src --include=\"*.cs\" ! -path \"*/obj/*\")"
     ],
     "additionalDirectories": [
       "C:\\Projects\\dotnet\\ochestrator\\.claude\\skills\\create-module",

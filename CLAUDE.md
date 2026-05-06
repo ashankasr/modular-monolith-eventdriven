@@ -13,11 +13,11 @@ Treat every design decision here as an intentional teaching example, not just im
 ### Clean Architecture + DDD — per module
 
 ```
-Ochestrator.Modules.<Name>.Domain          → Entities, Value Objects, Domain Events
-Ochestrator.Modules.<Name>.Application     → Commands, Queries, MediatR Handlers
-Ochestrator.Modules.<Name>.Infrastructure  → DbContext, Repositories, Consumers, EF Migrations
-Ochestrator.Modules.<Name>.IntegrationEvents → Contracts published to/consumed from RabbitMQ
-Ochestrator.Modules.<Name>.Presentation    → Minimal API endpoint mappings
+ModularMonolithEventDriven.Modules.<Name>.Domain          → Entities, Value Objects, Domain Events
+ModularMonolithEventDriven.Modules.<Name>.Application     → Commands, Queries, MediatR Handlers
+ModularMonolithEventDriven.Modules.<Name>.Infrastructure  → DbContext, Repositories, Consumers, EF Migrations
+ModularMonolithEventDriven.Modules.<Name>.IntegrationEvents → Contracts published to/consumed from RabbitMQ
+ModularMonolithEventDriven.Modules.<Name>.Presentation    → Minimal API endpoint mappings
 ```
 
 **Modules:** Orders · Inventory · Payments · Notifications
@@ -25,9 +25,9 @@ Ochestrator.Modules.<Name>.Presentation    → Minimal API endpoint mappings
 ### Common (shared kernel)
 
 ```
-Ochestrator.Common.Domain          → Base entities, Result<T>/Error primitives
-Ochestrator.Common.Application     → MediatR pipeline behaviors, AddApplication() extension
-Ochestrator.Common.Infrastructure  → BaseDbContext (audit fields, IUnitOfWork base)
+ModularMonolithEventDriven.Common.Domain          → Base entities, Result<T>/Error primitives
+ModularMonolithEventDriven.Common.Application     → MediatR pipeline behaviors, AddApplication() extension
+ModularMonolithEventDriven.Common.Infrastructure  → BaseDbContext (audit fields, IUnitOfWork base)
 ```
 
 ---
