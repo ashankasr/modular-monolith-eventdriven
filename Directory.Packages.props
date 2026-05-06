@@ -34,6 +34,7 @@
     <!-- Aspire Hosting (AppHost) -->
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.2.0" />
     <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="9.2.0" />
+    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="9.2.0" />
     <!-- Aspire ServiceDefaults -->
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.2.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.2.0" />
