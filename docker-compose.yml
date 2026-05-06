@@ -18,17 +18,18 @@ services:
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
     container_name: ochestrator-sqlserver
     ports:
       - "1433:1433"
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: "password"
+      SA_PASSWORD: "Password123!"
       MSSQL_PID: Developer
     volumes:
       - sqlserver_data:/var/opt/mssql
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P password -Q 'SELECT 1' -No -l 5 || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Password123!' -Q 'SELECT 1' -No -l 5 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10

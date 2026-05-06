@@ -10,10 +10,11 @@ var rabbitmq = builder.AddRabbitMQ("RabbitMQ", rabbitUser, rabbitPass)
     .WithDataVolume("rabbitmq_data"); // volume persists data between runs; container stops with AppHost
 
 // SA password matches appsettings.json and docker-compose.yml (Developer edition, free for dev/test).
-var sqlPassword = builder.AddParameter("sqlserver-password", "password", secret: true);
+var sqlPassword = builder.AddParameter("sqlserver-password", "Password123!", secret: true);
 
 var sqlServer = builder.AddSqlServer("SqlServer", sqlPassword)
-    .WithDataVolume("sqlserver_data");
+    .WithDataVolume("sqlserver_data")
+    .WithContainerRuntimeArgs("--platform", "linux/amd64");
 
 var db = sqlServer.AddDatabase("ModularMonolithEventDrivenDb");
 
