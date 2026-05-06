@@ -66,7 +66,7 @@ public static class OrdersModuleExtensions
     {
         // 1. Register DbContext
         services.AddDbContext<OrdersDbContext>(opts =>
-            opts.UseSqlServer(configuration.GetConnectionString("OchestratorDb")));
+            opts.UseSqlServer(configuration.GetConnectionString("ModularMonolithEventDrivenDb")));
 
         // 2. Register module-specific IUnitOfWork (prevents DI conflicts with other modules)
         services.AddScoped<IOrdersUnitOfWork>(sp =>
@@ -95,7 +95,7 @@ builder.Services.AddNotificationsModule(builder.Configuration);
 
 ## Persistence: Schema-per-Module
 
-All modules share one SQL Server database (`OchestratorDb`) but each owns a separate schema:
+All modules share one SQL Server database (`ModularMonolithEventDrivenDb`) but each owns a separate schema:
 
 | Module | Schema | Tables |
 |---|---|---|

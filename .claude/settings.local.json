@@ -12,7 +12,17 @@
       "Bash(grep -l \"OutboxMessages\" c:/Projects/dotnet/ochestrator/src/Modules/Orders/ModularMonolithEventDriven.Modules.Orders.Infrastructure/Persistence/Migrations/*.cs)",
       "Bash(grep -l \"OutboxMessages\" c:/Projects/dotnet/ochestrator/src/Modules/Inventory/ModularMonolithEventDriven.Modules.Inventory.Infrastructure/Persistence/Migrations/*.cs)",
       "Bash(dotnet restore *)",
-      "Bash(grep -r \"^namespace\" /Users/ashanka/Projects/modular-monolith-eventdriven/src --include=\"*.cs\" ! -path \"*/obj/*\")"
+      "Bash(grep -r \"^namespace\" /Users/ashanka/Projects/modular-monolith-eventdriven/src --include=\"*.cs\" ! -path \"*/obj/*\")",
+      "Bash(find /Users/ashanka/.claude -name \"*.md\" | grep -i skill | head -30)",
+      "Read(//Users/ashanka/.claude/**)",
+      "Bash(find /Users/ashanka -name \"*.md\" -path \"*/skills/*\" 2>/dev/null | head -20 *)",
+      "Read(//Users/ashanka/**)",
+      "Bash(dotnet user-secrets *)",
+      "Bash(dotnet ef *)",
+      "Bash(dotnet tool *)",
+      "Bash(export PATH=\"$PATH:/Users/ashanka/.dotnet/tools\")",
+      "Bash(wait)",
+      "Bash(dotnet build *)"
     ],
     "additionalDirectories": [
       "C:\\Projects\\dotnet\\ochestrator\\.claude\\skills\\create-module",

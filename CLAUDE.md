@@ -1,4 +1,4 @@
-# Ochestrator — Claude Code Guide
+# ModularMonolithEventDriven — Claude Code Guide
 
 ## Purpose
 
